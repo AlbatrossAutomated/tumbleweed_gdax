@@ -1,0 +1,20 @@
+{
+	"_comment_notFromApi": "this is a buy order that was partially-filled",
+	"id": "5",
+	"price": "11.26000000",
+	"size": "2.00000000",
+	"product_id": "ETH-USD",
+	"side": "buy",
+	"stp": "dc",
+	"type": "limit",
+	"time_in_force": "GTC",
+	"post_only": false,
+	"created_at": "2016-08-26T15:30:35.373482Z",
+	"done_at": "2016-08-26T16:30:35.164945Z",
+	"done_reason": "canceled",
+	"fill_fees": "0.0000000000000000",
+	"filled_size": "0.30000000",
+	"executed_value": "3.3780000000000000",
+	"status": "done",
+	"settled": true
+}

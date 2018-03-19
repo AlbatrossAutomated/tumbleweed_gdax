@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+class BotSettings
+  unless Rails.env.test?
+    # :nocov:
+    COVERAGE = 0.30 # percent as decimal - free-fall drop in market price to cover
+    BUY_DOWN_INTERVAL = 0.20 # nominal
+    PROFIT_INTERVAL = 0.20 # nominal
+    PRINT_MANTRA = true
+    HOARD_QUOTE_PROFITS = true
+    BASE_CURRENCY_STASH = 0.0 # percent as decimal - amount of profit to realize in base currency
+    ORDER_BACKFILLING = false # backfill orders when trading resumes at a lower price than when it was stopped
+    CANCEL_RETRIES = 15 # nominal
+    RESERVE = 0.0 # nominal amount of funds in your exchange account to isolate from Tumbleweed trading
+    CHILL_PARAMS = { consecutive_buys: 10, wait_time: 30 }.freeze # wait_time in minutes
+    # :nocov:
+  end
+end

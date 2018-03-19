@@ -1,0 +1,322 @@
+form,
+table {
+  margin-bottom: 1rem;
+}
+
+h5 {
+  margin-top: 1.3rem;
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+sub {
+  font-weight: normal;
+}
+
+label {
+  display: inline-block;
+  color: #00688B;
+  opacity: 0.7;
+}
+
+.container {
+  width: 90%;
+  max-width: 1000px;
+}
+
+#title {
+  margin: 1.5rem 0 1rem;
+  font-weight: 600;
+}
+
+#intro {
+  margin-bottom: 0;
+  opacity: 0.6;
+}
+
+.brand-primary {
+  color: #00304E;
+  opacity: 0.7;
+}
+
+.brand-secondary {
+  color: #00688B;
+  opacity: 0.7;
+}
+
+.hint {
+  color: darkgray;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.hide {
+  display: none;
+}
+
+.required:before {
+  color: firebrick;
+  content: "*";
+  opacity: 0.7;
+  margin-right: 3px;
+}
+
+.input-errors,
+.results-errors {
+  color: firebrick;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+  padding: 10px;
+  border-radius: 4px;
+  display: none;
+}
+
+.input-errors-list,
+.results-errors-list,
+.input-errors-list > li:last-of-type,
+.results-errors-list > li:last-of-type {
+  margin-bottom: 0;
+}
+
+.input-errors-list > li:not(:last-of-type),
+.results-errors-list > li:not(:last-of-type) {
+  margin-bottom: 0.5rem;
+}
+
+.input-errors > ul,
+.results-errors > ul {
+  list-style-type: disc;
+  margin-bottom: 0;
+}
+
+.close {
+  float: right;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  filter: alpha(opacity=20);
+  opacity: .2;
+  cursor: pointer;
+}
+
+.row.required-bc-settings {
+  margin-top: 1rem;
+}
+
+.settings-category {
+  font-size: 1.8rem;
+  margin-bottom: 0;
+  opacity: 0.6;
+}
+
+#settings_estimator_min_trade_amount {
+  margin-bottom: 5px;
+}
+
+#results-summary {
+  display: none;
+}
+
+#key-results th,
+#key-results td {
+  text-align: center;
+}
+
+#key-results > tbody > tr {
+  background-color: #2CAFAF;
+  opacity: 0.7;
+}
+
+#key-results > tbody > tr > td {
+  color: white;
+  font-weight: bold;
+  font-style: italic;
+  letter-spacing: 2px;
+}
+
+.row.toggle-trades {
+  padding: 2.3rem 0 1rem;
+}
+
+#toggle-hint-default,
+#toggle-hint-checked {
+  vertical-align: middle;
+  line-height: 34px;
+  margin-right: 8px;
+  margin-bottom: 0;
+}
+
+#toggle-hint-default {
+  color: darkgray;
+}
+
+#toggle-hint-checked {
+  color: #2CAFAF;
+}
+
+#free-fall-trades-toggle,
+#first-trade,
+#trades {
+  margin: 0;
+  vertical-align: middle;
+}
+
+/* #free-fall-trades-toggle {
+  float: right;
+} */
+
+#free-fall-trades > tr > td {
+  font-size: 12px;
+}
+
+.scrollable-tbody {
+  border: 1px solid lightgray;
+  border-radius: 2px;
+  padding-left: 15px;
+  margin-bottom: 20px;
+}
+
+/* sourced from: https://github.com/s8sachin/scrollable-tbody */
+.scrollable-tbody > table > tbody{
+  display: block;
+  max-height: 350px;
+  overflow-y: scroll;
+}
+
+.scrollable-tbody > table > thead, .scrollable-tbody > table > tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.scrollable-tbody > table > thead, .scrollable-tbody > table > tbody {
+  width: calc( 100% - 1em )
+}
+/* END sourced */
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  background-color: #009ACD;
+  color: #fff;
+  height: 16px;
+  width: 16px;
+  vertical-align: middle;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 230px;
+  padding: 8px;
+  background-color: #00304E;
+  color: #fff;
+  text-align: left;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 1.3rem;
+  font-weight: normal;
+
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -80px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 36%;
+  margin-left: -9px; /* 5px + 1/2 padding*/
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.far-right-tooltip.tooltiptext {
+  left: -375%;
+}
+
+.far-right-tooltip.tooltiptext::after {
+  left: 62%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+  padding: 8px;
+  margin-bottom: 3px;
+}
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: darkgray;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2CAFAF;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2CAFAF;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+ border-radius: 34px;
+}
+
+.slider.round:before {
+ border-radius: 50%;
+}

@@ -1,0 +1,18 @@
+{
+	"_comment_notFromApi": "this is a pending buy order",
+  "id": "4",
+  "price": "12.20000000",
+  "size": "2.00000000",
+  "product_id": "ETH-USD",
+  "side": "buy",
+  "stp": "dc",
+  "type": "limit",
+  "time_in_force": "GTC",
+  "post_only": false,
+  "created_at": "2016-08-17T18:58:47.399015Z",
+  "fill_fees": "0.0000000000000000",
+  "filled_size": "0.00000000",
+  "executed_value": "0.0000000000000000",
+  "status": "open",
+  "settled": false
+}

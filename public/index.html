@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SettingsEstimator</title>
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="skeleton.css">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="index.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <h4 id="title" class="brand-primary">Settings Estimator</h4>
+      <p id="intro" class="brand-primary">
+        Use this form to get a sense of how market conditions and Tumbleweed settings
+        influence per-trade parameters and performance. When developing, this form helps
+        assure you won't be making negative trades over short periods of
+        trading/live-testing activity.
+      </p>
+      <div class="input-errors">
+        <span class="close">&times;</span>
+        <ul class="input-errors-list"></ul>
+      </div>
+      <form class="create_settings_estimator" id="create_settings_estimator" action="/settings_estimator" accept-charset="UTF-8" method="post">
+        <input name="utf8" type="hidden" value="&#x2713;" />
+
+        <h5 class="brand-primary"><em>Exchange Variables</em></h5>
+        <div class="row">
+          <div class="three columns">
+            <label class="required" for="settings_estimator_base_currency_price">Price</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The current price of the crypto being traded, in quote currency units,
+                e.g., if trading LTC-USD, USD price goes here. Best bid will do.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[base_currency_price]" id="settings_estimator_base_currency_price" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_buy_fee">Buy fee (%)</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                Most trades will be maker trades where the fee is 0.0 on GDAX.
+                Taker fees vary per crypto and by user volume.
+                If you'd like to simulate taker trades, check GDAX docs for the
+                crypto you intend to trade, e.g, LTC taker fee is 0.3%.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[buy_fee]" id="settings_estimator_buy_fee" value="0.0" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_sell_fee">Sell fee (%)</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                Most trades will be maker trades where the fee is 0.0 on GDAX.
+                Taker fees vary per crypto and by user volume.
+                If you'd like to simulate taker trades, check GDAX docs for the
+                crypto you intend to trade, e.g, LTC taker fee is 0.3%.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[sell_fee]" id="settings_estimator_sell_fee" value="0.0" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_balance">Quote currency balance</label>
+            <div class="tooltip">?
+              <span class="tooltiptext far-right-tooltip">
+                The quote currency balance in your exchange account of the pair
+                you want to trade, e.g., USD balance if your trading LTC-USD.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[quote_currency_balance]" id="settings_estimator_quote_currency_balance" required/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="three columns">
+            <label class="required" for="settings_estimator_min_trade_amount">Min quantity allowed</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The exchange's minimum order quantity requirement for the crypto you want to trade.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[min_trade_amount]" id="settings_estimator_min_trade_amount" required/>
+            <small class="hint">
+              Found <a href="https://support.gdax.com/customer/portal/articles/2725970-trading-rules" target="_blank">here</a> under 'Order Minimums'.
+            </small>
+          </div>
+        </div>
+
+        <h5 class="brand-primary"><em>Tumbleweed Appetite Settings</em></h5>
+        <a class="readme-link" href="https://github.com/AlbatrossAutomated/tumbleweed_gdax#appetite-to-trade-settings" target="_blank">About these settings</a>
+        <div class="row required-bc-settings">
+          <div class="three columns">
+            <label class="required" for="settings_estimator_coverage">Coverage (%)</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The percent drop in market price for Tumbleweed to stretch funds
+                over so it can continue to trade. This protection recalculates
+                whenever a sell order executes.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[coverage]" placeholder="e.g. 35" id="settings_estimator_coverage" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_buy_down_interval">Buy down interval</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The difference in price between subsequent buys. For example, if a buy
+                executes at $185/LTC, and the BDI is $0.20, the next buy order will
+                be placed at $184.80.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[buy_down_interval]" id="settings_estimator_buy_down_interval" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_profit_interval">Profit interval</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The difference in price between a buy order and its associated sell.
+                For example, if a buy executes at $185/LTC, and the PI is $0.20,
+                The sell order will be placed at $185.20.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[profit_interval]" id="settings_estimator_profit_interval" required/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="three columns">
+            <label class="required" for="settings_estimator_base_currency_stash">Base currency stash (%)</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The percent of per sell profit to realize in the base currency. For
+                example, if this was set at 20% and quote profit was $0.05, then
+                $0.01 worth of the base currency will not be included in the sell
+                order quantity, and quote profit would be $0.04.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[base_currency_stash]" id="settings_estimator_base_currency_stash" value="0.0" required/>
+          </div>
+          <div class="three columns">
+            <label class="required" for="settings_estimator_reserve">Reserve</label>
+            <div class="tooltip">?
+              <span class="tooltiptext">
+                The amount of funds in your exchange's quote currency account to
+                keep separate from Tumbleweed's trading activity, e.g., USD to
+                hold back from trading in you're trading LTC-USD.
+              </span>
+            </div>
+            <input type="text" name="settings_estimator[reserve]" id="settings_estimator_reserve" value="0.0" required/>
+          </div>
+        </div>
+        <div class="row">
+          <input class="button-primary" type="submit" name="commit" value="Estimate"/>
+        </div>
+      </form>
+
+      <div class="row" id="results-summary">
+        <h5 class="brand-secondary"><em>Estimates</em></h5>
+        <div class="results-errors">
+          <span class="close">&times;</span>
+          <ul class="results-errors-list"></ul>
+        </div>
+        <table class="u-full-width" id="key-results">
+          <thead>
+            <tr>
+              <th>Quantity<sub>Buy</sub></th>
+              <th>Quantity<sub>Sell</sub></th>
+              <th>Profit<sub>Quote</sub></th>
+              <th>Profit<sub>Base</sub></th>
+              <th>'Free Fall' Covered To
+                <div class="tooltip">?
+                  <span class="tooltiptext far-right-tooltip">
+                    If the price falls without an intermittent uptick large enough
+                    to trigger a sell order, this is the price where all your funds
+                    will be tide up in pending sells.
+                  </span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="quantity-buy"></td>
+              <td id="quantity-sell"></td>
+              <td id="quote-profit-per-sell"></td>
+              <td id="base-profit-per-sell"></td>
+              <td id="covered-to"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="row">
+          <div class="row toggle-trades">
+            <h5 class="inline-block brand-secondary" id="first-trade"><em>Initial Trade</em></h5>
+            <h5 class="inline-block brand-secondary hide" id="trades"><em>Trades</em></h5>
+            <label id="free-fall-trades-toggle" class="switch u-pull-right">
+              <input type="checkbox" checked=false>
+              <span class="slider round"></span>
+            </label>
+            <p id="toggle-hint-default" class="inline-block u-pull-right"><em>All trades placed over 'Free Fall' drop</em></p>
+            <p id="toggle-hint-checked" class="inline-block hide u-pull-right"><em>All trades placed over 'Free Fall' drop</em></p>
+          </div>
+          <div class="scrollable-tbody">
+            <table class="u-full-width">
+              <thead>
+                <tr>
+                  <th>Bal</th>
+                  <th>Buy<sub>P</sub></th>
+                  <th>Buy<sub>Q</sub></th>
+                  <th>Buy<sub>Fee</sub></th>
+                  <th>Cost</th>
+                  <th>Sell<sub>P</sub></th>
+                  <th>Sell<sub>Q</sub></th>
+                  <th>Sell<sub>Fee</sub></th>
+                  <th>Revenue</th>
+                  <th>Profit<sub>Quote</sub></th>
+                  <th>Profit<sub>Base</sub></th>
+                </tr>
+              </thead>
+              <tbody  id="free-fall-trades">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,118 @@
+inherit_from: .rubocop_todo.yml
+AllCops:
+  Include:
+    - Rakefile
+    - config.ru
+  Exclude:
+    - config/**/*
+    - db/**/*
+    - bin/**/*
+    - lib/scripts/**/*
+    - spec/rails_helper.rb
+    - Gemfile
+  TargetRubyVersion: 2.4.0
+
+Metrics/MethodLength:
+  Exclude:
+    - db/migrate/**/*
+
+Style/Documentation:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/LineEndConcatenation:
+  Enabled: false
+
+Style/SingleLineBlockParams:
+  Enabled: false
+
+Layout/AlignHash:
+  Exclude:
+
+Layout/AlignParameters:
+  Exclude:
+
+Layout/IndentArray:
+  Exclude:
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: aligned
+
+Naming/PredicateName:
+  Exclude:
+
+Style/GuardClause:
+  Exclude:
+    - 'app/models/trader.rb'
+
+Style/RedundantBegin:
+  Exclude:
+
+Style/RescueModifier:
+  Exclude:
+
+Style/ConditionalAssignment:
+  Exclude:
+
+Lint/UnusedBlockArgument:
+  Enabled: true
+  Exclude:
+
+Metrics/LineLength:
+  Max: 110
+  Exclude:
+    - bin/spring
+
+Metrics/AbcSize:
+  Max: 16
+  Exclude:
+    - db/migrate/**/*
+    - spec/**/*
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+    - lib/tasks/*
+
+Metrics/CyclomaticComplexity:
+  Max: 7
+
+Metrics/ClassLength:
+  Exclude:
+    - app/models/decide.rb
+    - app/models/trader.rb
+
+Metrics/ModuleLength:
+  Exclude:
+
+Metrics/ParameterLists:
+  Max: 7
+
+Security/Eval:
+  Exclude:
+    - spec/**/*
+
+Lint/NestedMethodDefinition:
+  Exclude:
+
+Lint/HandleExceptions:
+  Exclude:
+    - spec/**/*
+
+Lint/ParenthesesAsGroupedExpression:
+  Exclude:
+
+# rubocop has issues with * used as array splats in some places
+Lint/AmbiguousOperator:
+  Exclude:
+
+StringLiterals:
+  Enabled: false
+
+Rails/Output:
+  Exclude:
+    - db/migrate/**/*
+    - config/environment.rb
+    - app/models/bot.rb

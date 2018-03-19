@@ -1,0 +1,18 @@
+{
+	"_comment_notFromApi": "this is a pending sell order",
+	"id": "1",
+	"price": "12.04000000",
+	"size": "2.00000000",
+	"product_id": "ETH-USD",
+	"side": "sell",
+	"stp": "dc",
+	"type": "limit",
+	"time_in_force": "GTC",
+	"post_only": false,
+	"created_at": "2016-08-22T02:11:05.48351Z",
+	"fill_fees": "0.0000000000000000",
+	"filled_size": "2.00000000",
+	"executed_value": "22.3800000000000000",
+	"status": "open",
+	"settled": false
+}

@@ -1,0 +1,20 @@
+{
+	"_comment_notFromApi": "this is a fully-filled buy order with a fee",
+	"id": "24",
+	"price": "15.58000000",
+	"size": "1.40663661",
+	"product_id": "ETH-USD",
+	"side": "buy",
+	"stp": "dc",
+	"type": "limit",
+	"time_in_force": "GTC",
+	"post_only": false,
+	"created_at": "2016-08-22T02:11:05.48351Z",
+	"done_at": "2016-08-22T02:28:30.85061Z",
+	"done_reason": "filled",
+	"fill_fees": "0.04724054274",
+	"filled_size": "1.40663661",
+	"executed_value": "21.9153983838",
+	"status": "done",
+	"settled": true
+}
