@@ -13,15 +13,12 @@ RSpec.describe Decide, type: :model do
   let(:available_quote_currency) do
     (quote_currency_balance - quote_currency_profit - quote_currency_reserve).round(2)
   end
-  let(:coverage) { BotSettings::COVERAGE }
   let(:buy_down_interval) { BotSettings::BUY_DOWN_INTERVAL }
   let(:accum_profit) { quote_currency_profit }
-  let(:dividend) { buy_down_interval * 2 * available_quote_currency }
-  let(:divisor) { bid**2 * coverage * (2 - coverage) }
   let(:depth) { JSON.parse(file_fixture('depth.json').read) }
   let(:best_bid_on_exchange) { depth['bids'][0][0].to_f }
   let(:best_ask_on_exchange) { depth['asks'][0][0].to_f }
-  let(:expected_quantity) { (dividend / divisor).round(8) }
+  let(:expected_quantity) { BotSettings::QUANTITY }
 
   before do
     allow(QuoteCurrencyProfit).to receive(:current_trade_cycle) { accum_profit }
@@ -86,11 +83,6 @@ RSpec.describe Decide, type: :model do
 
       it 'returns the expected quantity' do
         expect(subject[:quantity]).to eq expected_quantity
-      end
-
-      it 'sets buy_down_quantity' do
-        subject
-        expect(Decide.buy_down_quantity).to_not be_nil
       end
     end
 
@@ -166,18 +158,12 @@ RSpec.describe Decide, type: :model do
         expect(subject[:bid]).to eq bid
       end
 
-      it 'returns the set buy_down_quantity' do
-        Decide.buy_down_quantity = 100.93214323
-        expect(subject[:quantity]).to eq Decide.buy_down_quantity
+      it 'returns the expected buy_down_quantity' do
+        expect(subject[:quantity]).to eq expected_quantity
       end
 
       it 'logs the buy_down_interval and buy_down_bid' do
         expect(Bot).to receive(:log).with(price_log_msg)
-        subject
-      end
-
-      it 'logs coverage info' do
-        expect(Bot).to receive(:log).with(cov_log_msg)
         subject
       end
     end
@@ -231,10 +217,8 @@ RSpec.describe Decide, type: :model do
         expect(subject[:bid]).to eq bid
       end
 
-      it 'recalculates the buy_down_quantity' do
-        Decide.buy_down_quantity = 100.93214323
+      it 'returns the expected buy_down_quantity' do
         expect(subject[:quantity]).to eq expected_quantity
-        expect(Decide.buy_down_quantity).to eq expected_quantity
       end
     end
   end

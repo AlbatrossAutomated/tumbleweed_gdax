@@ -69,8 +69,29 @@ class Trader
     def handle_filled_buy(buy_order)
       Bot.log("Possible API response w/wrong 'filled_size' causing error on sell side: ", buy_order, :debug)
       Trader.consecutive_buys = Trader.consecutive_buys.to_i + 1
-      flipped_trade = FlippedTrade.create_from_buy(buy_order)
-      place_sell(flipped_trade, buy_order)
+      exchange_finalized_buy = exchange_finalized(buy_order)
+      flipped_trade = FlippedTrade.create_from_buy(exchange_finalized_buy)
+      place_sell(flipped_trade, exchange_finalized_buy)
+    end
+
+    def exchange_finalized(buy_order)
+      # During periods of high exchange activity, GDAX on occassion returns an order
+      # that is "settled": true and "done_reason": "filled", but "filled_size" is
+      # inaccurate (too small). This is a write-lag/race-condition as "filled_size"
+      # is eventually accurate on subsequent requests.
+
+      requested_quantity = BigDecimal.new(buy_order['size'])
+      response_quantity = BigDecimal.new(buy_order['filled_size'])
+
+      return buy_order if requested_quantity == response_quantity
+
+      loop do
+        Bot.log("Buy order 'filled_size' innacurate", buy_order, :warn)
+        @buy_order = RequestUsher.execute('order', buy_order['id'])
+        break if BigDecimal.new(@buy_order['filled_size']) == BigDecimal.new(@buy_order['size'])
+      end
+
+      @buy_order
     end
 
     def place_sell(flipped_trade, buy_order)

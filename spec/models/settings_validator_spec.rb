@@ -3,15 +3,15 @@
 require 'rails_helper'
 
 RSpec.describe SettingsValidator, type: :model do
-  describe '.validate_coverage' do
+  describe '.validate_quantity' do
     let(:err_msg) do
-      "Coverage invalid: Must be in the range 0.01 - 1.0"
+      "Quantity invalid: Must be greater than exchange's min trade amount"
     end
 
-    before { stub_const("BotSettings::COVERAGE", 1.1) }
+    before { stub_const("BotSettings::QUANTITY", 0.0001) }
 
     it "raises a CriticalError" do
-      expect { SettingsValidator.validate_coverage }.to raise_error(CriticalError, err_msg)
+      expect { SettingsValidator.validate_quantity }.to raise_error(CriticalError, err_msg)
     end
   end
 

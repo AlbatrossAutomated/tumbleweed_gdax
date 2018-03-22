@@ -2,25 +2,23 @@
 
 class Decide
   class << self
-    attr_accessor :buy_down_quantity
 
     def scrum_params
       bid = RequestUsher.execute('quote')['bids'][0][0].to_f.round(2)
 
       {
         bid: bid,
-        quantity: buy_quantity(bid)
+        quantity: buy_quantity
       }
     end
 
     def buy_down_params(previous_bid)
       bid = (previous_bid - BotSettings::BUY_DOWN_INTERVAL).round(2)
       Bot.log("BDI: #{BotSettings::BUY_DOWN_INTERVAL}. Buy Down Bid: #{bid}")
-      log_coverage(previous_bid)
 
       {
         bid: bid,
-        quantity: buy_quantity(bid, true)
+        quantity: buy_quantity
       }
     end
 
@@ -33,27 +31,12 @@ class Decide
 
       {
         bid: bid,
-        quantity: buy_quantity(bid)
+        quantity: buy_quantity
       }
     end
 
-    def buy_quantity(bid, buy_down = false)
-      # `bid` is market price on scrum, previous bid less BDI on buy_down,
-      # highest sold less BDI and PI on rebuy.
-
-      #           BUY_DOWN_INTERVAL * 2 * Bal
-      # Q = ----------------------------------------
-      #       bid**2 * COVERAGE * (2 - COVERAGE)
-
-      return @buy_down_quantity if @buy_down_quantity && buy_down
-
-      balance = quote_currency_balance
-      dividend = BotSettings::BUY_DOWN_INTERVAL * 2 * balance
-      divisor = bid**2 * BotSettings::COVERAGE * (2 - BotSettings::COVERAGE)
-
-      quantity = valid_buy_quantity(dividend / divisor)
-      @buy_down_quantity = quantity
-      quantity
+    def buy_quantity
+      valid_buy_quantity(BotSettings::QUANTITY)
     end
 
     def valid_buy_quantity(quantity)
@@ -72,13 +55,6 @@ class Decide
       reserve = BotSettings::RESERVE
 
       (balance - hoard - reserve).round(2)
-    end
-
-    def log_coverage(previous_bid)
-      covered_to_price = previous_bid * (1 - BotSettings::COVERAGE)
-      msg = "COVERAGE: #{BotSettings::COVERAGE * 100}%." +
-            " Covered to: $#{covered_to_price.round(2)}."
-      Bot.log(msg)
     end
 
     def affordable?(params)
@@ -185,9 +161,6 @@ class Decide
 
       if BotSettings::BASE_CURRENCY_STASH.zero?
         log_sell_side(ask, profit_without_stash, 0.0)
-        # msg = "Selling at #{ask.round(2)} for an estimated profit of #{profit_without_stash.round(8)} " +
-        #       "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
-        # Bot.log(msg)
 
         {
           ask: ask.round(2),

@@ -3,13 +3,13 @@
 class SettingsValidator
   class << self
     def validate
-      validate_coverage
+      validate_quantity
       validate_base_currency_stash
     end
 
-    def validate_coverage
-      return if BotSettings::COVERAGE.between?(0.01, 1.0)
-      msg = "Coverage invalid: Must be in the range 0.01 - 1.0"
+    def validate_quantity
+      return if BotSettings::QUANTITY >= ENV['MIN_TRADE_AMT'].to_f
+      msg = "Quantity invalid: Must be greater than exchange's min trade amount"
       raise CriticalError, msg
     end
 

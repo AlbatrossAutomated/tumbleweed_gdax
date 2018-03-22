@@ -186,11 +186,17 @@ RSpec.describe Trader, type: :model do
           Trader.consecutive_buys = consecutive_buys_count
           allow(Request).to receive(:order) { filled_buy_resp }
           allow(Request).to receive(:sell_order) { sell_resp }
+          allow(Trader).to receive(:exchange_finalized) { parsed_resp }
         end
 
         it 'adds to the consecutive buy count' do
           subject
           expect(Trader.consecutive_buys).to eq consecutive_buys_count + 1
+        end
+
+        it 'checks the fill_size is accurate' do
+          expect(Trader).to receive(:exchange_finalized)
+          subject
         end
 
         it 'creates a flipped_trade with the expected fields' do
@@ -213,6 +219,33 @@ RSpec.describe Trader, type: :model do
           expect(subject).to eq buy_down
         end
       end
+    end
+  end
+
+  describe '.exchange_finalized' do
+    let(:bid) { scrum_params[:bid] }
+    let(:inaccurate_resp) do
+      order = JSON.parse(filled_buy_resp)
+      filled_size = order['filled_size']
+      inaccurate = order.merge('filled_size' => BigDecimal.new(filled_size) * 0.10)
+      inaccurate.to_json
+    end
+    let(:inaccurate_parsed) { JSON.parse(inaccurate_resp) }
+
+    before do
+      allow(Trader).to receive(:loop).and_yield.and_yield.and_yield
+      allow(Request).to receive(:order).and_return(inaccurate_resp, filled_buy_resp)
+    end
+
+    subject { Trader.exchange_finalized(inaccurate_parsed) }
+
+    it "polls the endpoint until 'filled_size' is accurate" do
+      expect(Request).to receive(:order).exactly(:twice)
+      subject
+    end
+
+    it 'returns the exchange finalized order' do
+      expect(subject).to eq JSON.parse(filled_buy_resp)
     end
   end
 
@@ -266,7 +299,7 @@ RSpec.describe Trader, type: :model do
 
     context 'no trade zone is triggered' do
       before do
-        stub_const("BotSettings::CHILL_PARAMS", { consecutive_buys: 2, wait_time: 1 })
+        stub_const("BotSettings::CHILL_PARAMS", consecutive_buys: 2, wait_time: 1)
         allow(Trader).to receive(:chill)
       end
 
