@@ -17,16 +17,16 @@ class SettingsEstimatorController < Rails::ApplicationController
 
   def settings_estimator_params
     settings = %i[
-      quote_currency_balance
-      reserve
+      base_currency_price
       buy_fee
       sell_fee
-      base_currency_price
+      quote_currency_balance
       min_trade_amount
-      coverage
-      base_currency_stash
+      buy_quantity
       buy_down_interval
       profit_interval
+      base_currency_stash
+      reserve
     ]
 
     params.require(:settings_estimator).permit(settings)

@@ -74,6 +74,11 @@ class Sentinel
       return UnsellablePartialBuy.create_from_buy(@buy_order) if unsellable?
 
       sell_partial_buy(@buy_order)
+      # For both unsellable and sellable, I think there is an edge case here during
+      # high exchange activity where 'filled_size' could be inaccurate (less than actual).
+      # This would leave unaccounted for crypto in the exchange account. It might
+      # be worth polling again, or checking /fills/:id if that proves to be more
+      # accurate.
     end
 
     def unsellable?

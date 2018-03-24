@@ -42,7 +42,7 @@
             <label class="required" for="settings_estimator_buy_fee">Buy fee (%)</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                Most trades will be maker trades where the fee is 0.0 on GDAX.
+                Most trades should be maker trades where the fee is 0.0 on GDAX.
                 Taker fees vary per crypto and by user volume.
                 If you'd like to simulate taker trades, check GDAX docs for the
                 crypto you intend to trade, e.g, LTC taker fee is 0.3%.
@@ -54,7 +54,7 @@
             <label class="required" for="settings_estimator_sell_fee">Sell fee (%)</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                Most trades will be maker trades where the fee is 0.0 on GDAX.
+                Most trades should be maker trades where the fee is 0.0 on GDAX.
                 Taker fees vary per crypto and by user volume.
                 If you'd like to simulate taker trades, check GDAX docs for the
                 crypto you intend to trade, e.g, LTC taker fee is 0.3%.
@@ -88,21 +88,25 @@
           </div>
         </div>
 
-        <h5 class="brand-primary"><em>Tumbleweed Appetite Settings</em></h5>
+        <h5 class="brand-primary"><em>Tumbleweed Settings</em></h5>
+        <p class="note brand-primary">
+          <em>
+            NOTE: 'buy down interval' and 'chill params' are not relavent here as they
+            pertain to the frequency of trading and not per trade base/quote currency profit.
+          </em>
+        </p>
         <a class="readme-link" href="https://github.com/AlbatrossAutomated/tumbleweed_gdax#appetite-to-trade-settings" target="_blank">About these settings</a>
         <div class="row required-bc-settings">
           <div class="three columns">
-            <label class="required" for="settings_estimator_coverage">Coverage (%)</label>
+            <label class="required" for="settings_estimator_coverage">Buy quantity</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                The percent drop in market price for Tumbleweed to stretch funds
-                over so it can continue to trade. This protection recalculates
-                whenever a sell order executes.
+                The amount of the base currency to purchase per buy order
               </span>
             </div>
-            <input type="text" name="settings_estimator[coverage]" placeholder="e.g. 35" id="settings_estimator_coverage" required/>
+            <input type="text" name="settings_estimator[buy_quantity]" id="settings_estimator_buy_quantity" required/>
           </div>
-          <div class="three columns">
+          <!-- <div class="three columns">
             <label class="required" for="settings_estimator_buy_down_interval">Buy down interval</label>
             <div class="tooltip">?
               <span class="tooltiptext">
@@ -112,7 +116,7 @@
               </span>
             </div>
             <input type="text" name="settings_estimator[buy_down_interval]" id="settings_estimator_buy_down_interval" required/>
-          </div>
+          </div> -->
           <div class="three columns">
             <label class="required" for="settings_estimator_profit_interval">Profit interval</label>
             <div class="tooltip">?
@@ -124,19 +128,17 @@
             </div>
             <input type="text" name="settings_estimator[profit_interval]" id="settings_estimator_profit_interval" required/>
           </div>
-        </div>
-        <div class="row">
           <div class="three columns">
             <label class="required" for="settings_estimator_base_currency_stash">Base currency stash (%)</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                The percent of per sell profit to realize in the base currency. For
+                0-100, the percent of per sell profit to realize in the base currency. For
                 example, if this was set at 20% and quote profit was $0.05, then
                 $0.01 worth of the base currency will not be included in the sell
                 order quantity, and quote profit would be $0.04.
               </span>
             </div>
-            <input type="text" name="settings_estimator[base_currency_stash]" id="settings_estimator_base_currency_stash" value="0.0" required/>
+            <input type="text" name="settings_estimator[base_currency_stash]" id="settings_estimator_base_currency_stash" value="0" required/>
           </div>
           <div class="three columns">
             <label class="required" for="settings_estimator_reserve">Reserve</label>
@@ -156,7 +158,7 @@
       </form>
 
       <div class="row" id="results-summary">
-        <h5 class="brand-secondary"><em>Estimates</em></h5>
+        <h5 class="brand-secondary"><em>Key Estimates</em></h5>
         <div class="results-errors">
           <span class="close">&times;</span>
           <ul class="results-errors-list"></ul>
@@ -168,15 +170,6 @@
               <th>Quantity<sub>Sell</sub></th>
               <th>Profit<sub>Quote</sub></th>
               <th>Profit<sub>Base</sub></th>
-              <th>'Free Fall' Covered To
-                <div class="tooltip">?
-                  <span class="tooltiptext far-right-tooltip">
-                    If the price falls without an intermittent uptick large enough
-                    to trigger a sell order, this is the price where all your funds
-                    will be tide up in pending sells.
-                  </span>
-                </div>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -185,21 +178,11 @@
               <td id="quantity-sell"></td>
               <td id="quote-profit-per-sell"></td>
               <td id="base-profit-per-sell"></td>
-              <td id="covered-to"></td>
             </tr>
           </tbody>
         </table>
         <div class="row">
-          <div class="row toggle-trades">
-            <h5 class="inline-block brand-secondary" id="first-trade"><em>Initial Trade</em></h5>
-            <h5 class="inline-block brand-secondary hide" id="trades"><em>Trades</em></h5>
-            <label id="free-fall-trades-toggle" class="switch u-pull-right">
-              <input type="checkbox" checked=false>
-              <span class="slider round"></span>
-            </label>
-            <p id="toggle-hint-default" class="inline-block u-pull-right"><em>All trades placed over 'Free Fall' drop</em></p>
-            <p id="toggle-hint-checked" class="inline-block hide u-pull-right"><em>All trades placed over 'Free Fall' drop</em></p>
-          </div>
+          <h5 id="first-trade" class="brand-secondary"><em>Detailed</em></h5>
           <div class="scrollable-tbody">
             <table class="u-full-width">
               <thead>
@@ -217,7 +200,7 @@
                   <th>Profit<sub>Base</sub></th>
                 </tr>
               </thead>
-              <tbody  id="free-fall-trades">
+              <tbody  id="trade-detailed">
               </tbody>
             </table>
           </div>

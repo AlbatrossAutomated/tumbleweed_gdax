@@ -103,6 +103,11 @@ label {
   cursor: pointer;
 }
 
+.note {
+  width: 60%;
+  margin: 0.7em 0;
+}
+
 .row.required-bc-settings {
   margin-top: 1rem;
 }
@@ -138,38 +143,12 @@ label {
   letter-spacing: 2px;
 }
 
-.row.toggle-trades {
-  padding: 2.3rem 0 1rem;
-}
-
-#toggle-hint-default,
-#toggle-hint-checked {
-  vertical-align: middle;
-  line-height: 34px;
-  margin-right: 8px;
-  margin-bottom: 0;
-}
-
-#toggle-hint-default {
-  color: darkgray;
-}
-
-#toggle-hint-checked {
-  color: #2CAFAF;
-}
-
-#free-fall-trades-toggle,
-#first-trade,
-#trades {
-  margin: 0;
+#first-trade {
+  margin-bottom: 0.7em;
   vertical-align: middle;
 }
 
-/* #free-fall-trades-toggle {
-  float: right;
-} */
-
-#free-fall-trades > tr > td {
+#trade-detailed > tr > td {
   font-size: 12px;
 }
 

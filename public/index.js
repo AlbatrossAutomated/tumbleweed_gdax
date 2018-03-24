@@ -5,10 +5,7 @@ $(document).ready(function() {
     // reset elements visibility/content states
     $('.input-errors, .results-errors').hide();
     $('#results-summary').hide();
-    $('#free-fall-trades, .input-errors-list, .results-errors-list').empty();
-    $('#free-fall-trades-toggle > input').prop('checked', false)
-    $('#trades, #toggle-hint-checked').addClass('hide');
-    $('#first-trade, #toggle-hint-default').removeClass('hide');
+    $('#trade-detailed, .input-errors-list, .results-errors-list').empty();
 
     var data = $(this).serialize()
 
@@ -18,18 +15,13 @@ $(document).ready(function() {
       } else {
         showResultsErrors(resp.results_errors);
         addKeyEstimates(resp);
-        addFreeFallTrades(resp.free_fall_trades);
+        addTradeDetailed(resp.trade_detailed)
         displayResults();
       };
     });
   });
 
   // listeners
-  $('#free-fall-trades-toggle > .slider.round').on('click', function() {
-    $('#free-fall-trades > tr:not(:first-of-type)').toggle();
-    $('#trades, #first-trade, #toggle-hint-default, #toggle-hint-checked').toggleClass('hide');
-  })
-
   $('.close').on('click', function() {
     $(this).parent().hide();
   });
@@ -54,36 +46,28 @@ function showErrors(errors, category) {
 }
 
 function addKeyEstimates(resp) {
-  var lastTradeIndex = resp.free_fall_trades.length - 1
-  var coveredToPrice = resp.free_fall_trades[lastTradeIndex].buy_price
-  // var percentProfit = ((resp.quote_profit_per_sell / resp.free_fall_trades[0].cost) * 100).toFixed(4);
-
   $('#quantity-buy').html(resp.buy_quantity);
   $('#quantity-sell').html(resp.sell_quantity);
   $('#quote-profit-per-sell').html(resp.quote_profit_per_sell);
   $('#base-profit-per-sell').html(resp.base_profit_per_sell);
-  $('#covered-to').html(coveredToPrice);
 }
 
-function addFreeFallTrades(trades) {
-  $.each(trades, function(index, val) {
-    var rowData = '<td>' + val.balance + '</td>' +
-                  '<td>' + val.buy_price + '</td>' +
-                  '<td>' + val.buy_quantity + '</td>' +
-                  '<td>' + val.buy_fee + '</td>' +
-                  '<td>' + val.total_cost + '</td>' +
-                  '<td>' + val.sell_price + '</td>' +
-                  '<td>' + val.sell_quantity + '</td>' +
-                  '<td>' + val.sell_fee + '</td>' +
-                  '<td>' + val.total_revenue + '</td>' +
-                  '<td>' + val.quote_profit + '</td>' +
-                  '<td>' + val.base_profit + '</td>'
+function addTradeDetailed(trade) {
+  var rowData = '<td>' + trade.balance + '</td>' +
+                '<td>' + trade.buy_price + '</td>' +
+                '<td>' + trade.buy_quantity + '</td>' +
+                '<td>' + trade.buy_fee + '</td>' +
+                '<td>' + trade.total_cost + '</td>' +
+                '<td>' + trade.sell_price + '</td>' +
+                '<td>' + trade.sell_quantity + '</td>' +
+                '<td>' + trade.sell_fee + '</td>' +
+                '<td>' + trade.total_revenue + '</td>' +
+                '<td>' + trade.quote_profit + '</td>' +
+                '<td>' + trade.base_profit + '</td>'
 
-    $('#free-fall-trades').append('<tr>' + rowData + '</tr>');
-  });
+  $('#trade-detailed').append('<tr>' + rowData + '</tr>');
 }
 
 function displayResults() {
-  $('#free-fall-trades > tr:not(:first-of-type)').hide();
   $('#results-summary').show();
 }
