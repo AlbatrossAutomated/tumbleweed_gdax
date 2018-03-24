@@ -43,7 +43,7 @@ development.
 
 Expect your taxes to be complicated by running Tumbleweed.
 
-#### Background
+## Background
 Tumbleweed is BlueCollar with one major difference. The fund protection strategy
 of `COVERAGE` seen in BlueCollar is replaced here with configurable no trade zones
 referred to as `CHILL_PARAMS`. This approach is new, and does not have the history
