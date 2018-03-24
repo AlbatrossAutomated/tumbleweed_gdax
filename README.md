@@ -16,28 +16,6 @@ It can be run out of the box, but it should be considered an Alpha level release
 is not a turnkey or completed project. For example, if you intend to have it hosted
 non-locally you will need to add your own deployment and cloud operating solutions.
 
-Technically and strategically I see areas ripe for exploration and improvement,
-and I’ve resisted implementations where I felt opinions might vary widely on an
-approach going forward. I didn't want to make it difficult for other developer-traders
-to build out their own strategies and improvements. I'm sure there are areas where
-I've done that already, but hopefully a broad range of developer-traders can still
-fork and improve it towards their own goals and interests.
-
-I’m satisfied with how Tumbleweed has evolved up to this point, how it has performed,
-and the journey it has taken me on through the community of cryptoland. In terms of
-a larger project, I have no broader vision for where it goes from here. I'm curious
-what other developer-traders make of it and where they might take it.
-
-I went with a kitchen sink approach to documentation for a couple reasons. I realized
-how much of a silo I've been in with this project over the past couple years, and
-that things obvious to me just wouldn't be to others. I wanted to give any future
-developer-traders that pick up this project everything I knew and had. Additionally
-I felt that any one aspect on its own might be a golden nugget to someone else whether
-they intend to develop/operate Tumbleweed or not. I may know something that sparks an
-idea or saves them some pain. Lastly, I'm very weary of inexperienced developer-traders
-attempting to operate this program in its current state, and an extensive README seemed
-like a way for them to self-select out.
-
 ## Disclaimer
 Any information provided in this repository is for information purposes only.
 It is not intended to be investment advice. Seek a duly licensed professional for
@@ -66,15 +44,17 @@ development.
 Expect your taxes to be complicated by running Tumbleweed.
 
 #### Background
-Tumbleweed has been a hobby project of mine for a few years now. It made its first
-automated trade on October 30th, 2013 on the CampBX exchange. It turned out to be
-a very interesting time to enter the market. BTC was trading at around $200, then
-almost $2K by the end of November, and Mt. Gox soon followed in early 2014. It was
-from operating in this environment that Tumbleweed's strategy mostly evolved.  
+Tumbleweed is BlueCollar with one major difference. The fund protection strategy
+of `COVERAGE` seen in BlueCollar is replaced here with configurable no trade zones
+referred to as `CHILL_PARAMS`. This approach is new, and does not have the history
+of performance and predictability of BlueCollar.
 
-By mid 2016 I had seen enough positives in the trader to warrant a re-write, at which point I
-implemented it for GDAX. In total Tumbleweed has been run against 3 different exchanges
-and traded 4 different cryptos (BTC, ETH, LTC, XRP).
+One improvement Tumbleweed has over BlueCollar is that the operator can set quantity
+per trade. In BlueCollar quantity is dynamically calculated. For those with smaller
+stacks, or when `COVERAGE` wasn't adequate, the calculated quantity could end up
+being less than the exchange's minimum trade quantity requirement. Tumbleweed doesn't
+bump up against that limitation. Tumbleweed also has the ability to pause trading,
+which can have advantages over BlueCollar's aspect of always trading.
 
 ## Performance Expectations
 #### When Lambo?
@@ -83,16 +63,12 @@ This strategy isn’t designed to compete with or outdo approaches that focus on
 rapidly increasing portfolio value (PV). Tumbleweed was designed as a passive income
 generator; a trading system that garners regular extractable gains without having to
 be reloaded with funds. It's overall performance can only be measured accurately in
-the long term. Two consecutive years it doubled it's funds, which anywhere except
-the crypto markets would be impressive.
+the long term.
 
-Additionally, the strategy Tumbleweed is based upon wasn't envisioned as a “one
+Additionally, the strategy Tumbleweed is based upon isn't envisioned as a “one
 ring to rule them all” type approach, but rather as a compliment to other strategies.
 In its current state it seems to perform best in periods of high price oscillation,
 where the price generally isn't higher than where it was when it started trading.
-Though it's focus isn't primarily PV, it has made PV gains in down markets and longer
-lived price troughs. On sizable upturns it will underperform compared to a lot of
-other strategies.
 
 #### Affordability  
 The more funds Tumbleweed has access to the better it will perform nominally speaking.
@@ -128,9 +104,8 @@ can be withdrawn without impacting the performance of the trader at the time of
 withdrawal. Incidentally, this cumulative total is what taxes are due on.   
 
 The main objective is protecting the initial funds from depletion so the bot is
-kept alive and trading. This is done by mathematically stretching available funds
-so that declines can be absorbed, and Tumbleweed can continue to flip trades at
-lower prices. It's a "bend don't break" approach.
+kept alive and trading. This is done by periodically pausing trading on downturns,
+and later resuming where Tumbleweed can continue to flip trades at lower prices.
 
 The thinking was that if any trader can be kept alive and execute profitable trades
 in spite of price volatility and without the operator having to give it more funds,
@@ -146,9 +121,7 @@ the trader's decisions are a factor that influences performance.
 #### Characteristics
 * No use of Technical Analysis (TA). It is purely reactive to events affecting the
 status of its own orders.
-* Perpetually a market maker. It does not halt/pause it’s own trading and maintains
-open buy and sell orders.
-* Always buys the dip (how aggressively is configurable).
+* Buys the dip (how aggressively is configurable).
 * No stop loss protection strategy. Tumbleweed never wittingly places a sell that
 would result in a loss.
 
@@ -183,16 +156,11 @@ not the case then settings are inadequate.
 **_flipped trade_**  
 Consists of a buy and it's corresponding sell after both have executed.  
 
-**_coverage_**  
-A configurable setting, this is the percent drop in price over which Tumbleweed
-will stretch available funds so it can continue to viably flip trades in that range.
-The current implementation recalculates this protection on every filled sell order.
-So at any given time coverage applies to a range as measured from the price of the
-last executed sell.
-
-In some sense coverage is about protection against quick downturns where there
-isn't an intermittent uptick large enough to trigger a pending sell, but this
-setting still has an influence on long term performance.
+**_chill params_**  
+A configurable setting, this is the number of consecutive buys after which Tumbleweed
+will stop trading. The amount of time to wait before resuming trading is configurable
+as well. Trading resumes once the time expires, or if a sell executes while it is
+waiting. In either case, trade resumption begins with a scrum buy.
 
 **_hoarding_**  
 A configurable setting, by default the cumulative quote currency profits (USD here)
@@ -242,6 +210,8 @@ automated but it could be.
 
 ![trade cycle](public/images/trade_cycle.png?raw=true)  
 
+
+NOTE: Needs updating with chill params info.  
 ### Scrum Bidding
 In order to execute a buy at the beginning of a trading cycle, the bot monitors
 the market's top bid and employs logic to bid/cancel/rebid as needed so that it
@@ -272,8 +242,6 @@ over the course of trading, the pending buy order is canceled, and a rebuy order
 is placed at a price that is PI + BDI below the price of the trader's lowest pending
 sell.
 
-**>>>Add an image from the talk illustrating BDI, PI, and Straddle<<<**  
-
 ### When a Straddle Clears
 If all sell orders execute, then the pending buy order is cancelled, and the bot
 employs its scrum bidding logic again.
@@ -292,22 +260,9 @@ cancelled, and the bot places rebuy orders to re-establish the straddle spread.
 * If all sells execute, the inner loop is broken, and the bot scrums again.
 
 ## Documentation
-The remainder of documentation can be found in the [Wiki](../../wiki) along with
+The remainder of documentation can be found in BlueCollar's
+[Wiki](https://github.com/AlbatrossAutomated/blue_collar_gdax/wiki) along with
 answers to what are likely to be commonly asked questions.  
-
-[Models](../../wiki/Models)  
-[Performance](../../wiki/Performance)  
-[PV is Irrelevant](../../wiki/Portfolio-Value-is-Irrelevant)  
-[PV Matters](../../wiki/Portfolio-Value-Matters)  
-[Stretching the Funds](../../wiki/Stretching-the-Funds)  
-[If Funds Run Out](../../wiki/If-Funds-Run-Out)  
-[Hidden Gains](../../wiki/Hidden-Gains)  
-[Why Not Just HODL?](../../wiki/Why-Not-Just-HODL)  
-[Why Ruby On Rails?](../../wiki/Why-Ruby-On-Rails)  
-[Scaling](../../wiki/Scaling)  
-[Volume and Taxes](../../wiki/Volume-and-Taxes)  
-[Future Development](../../wiki/Future-Development)  
-[Past Development](../../wiki/Past-Development)  
 
 ## Development
 ### Ruby on Rails
@@ -495,30 +450,16 @@ To use the Settings Estimator:
 
 <u>_Main Appetite Settings_</u>  
 
-**`COVERAGE`**  
-Float: A percent of market price as decimal, 0.01 to 1.00.  
+**`CHILL_PARAMS`**  
+Hash: `{ consecutive_buys: x, wait_time: y }`
 
-Coverage allows the operator to configure how much of a price drop they want to protect
-against. Regardless of all other settings, Tumbleweed will stretch available funds so
-it can afford to trade down to a price resulting from the coverage setting. It will get
-blocked from trading just shy of that price in actuality because of exchanges' min
-order requirement, but that delta is very minimal.
+If x number of consecutive buys execute (the price is falling), pause trading for y
+amount of time. Trading resumes if time expires or if a sell executes (the price is rising)
+while trading is paused. The advantage of pausing while the price falls is simply
+about survivability and stretching the funds.
 
-The current implementation recalculates this protection on every filled sell order.
-So at any given time coverage applies to a range as measured from the price of the
-last executed sell.
-
-* All other factors being equal, the lower this is the more profit will be made per
-sell order.
-
-* The lower the coverage, the more likely it becomes that all funds get tied up in
-pending sells during a downturn.
-
-* A very large coverage probably doesn't make sense regardless of other settings.
-Would it make sense to cover a 100% drop?
-
-_NOTE: Reasonable coverage can depend on the price of the crypto being traded.
-A $0.79 crypto in probably more likely to fall 15% in a flash, than a $400 one_  
+* As this fund stretching mechanism is new, I won't hazard a guess just yet about the
+impact of this setting.  
 
 **`BUY_DOWN_INTERVAL`**  
 Float: The difference in price between subsequent buys.
