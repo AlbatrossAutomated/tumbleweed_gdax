@@ -9,6 +9,19 @@ You may, however, be interested in this repo even if you choose not to operate i
 The documentation thoroughly details the market making strategy it employs, and
 that may be of interest to you. Or perhaps something in the codebase will be of use.
 
+## Background
+Tumbleweed is BlueCollar with one major difference. The fund protection strategy
+of `COVERAGE` seen in BlueCollar is replaced here with configurable no trade zones
+referred to as `CHILL_PARAMS`. This approach is new, and does not have the history
+of performance and predictability of BlueCollar.
+
+One improvement Tumbleweed has over BlueCollar is that the operator can set quantity
+per trade. In BlueCollar quantity is dynamically calculated. For those with smaller
+stacks, or when `COVERAGE` wasn't adequate, the calculated quantity could end up
+being less than the exchange's minimum trade quantity requirement. Tumbleweed doesn't
+bump up against that limitation. Tumbleweed also has the ability to pause trading,
+which can have advantages over BlueCollar's aspect of always trading.
+
 ## Introduction
 Tumbleweed is a market maker specialized to trade crypto-fiat pairs on the GDAX
 exchange. It is available for forking and developing out further as you see fit.
@@ -42,19 +55,6 @@ to prefer the liquidity of a sell off and consider any smaller losses a cost of
 development.
 
 Expect your taxes to be complicated by running Tumbleweed.
-
-## Background
-Tumbleweed is BlueCollar with one major difference. The fund protection strategy
-of `COVERAGE` seen in BlueCollar is replaced here with configurable no trade zones
-referred to as `CHILL_PARAMS`. This approach is new, and does not have the history
-of performance and predictability of BlueCollar.
-
-One improvement Tumbleweed has over BlueCollar is that the operator can set quantity
-per trade. In BlueCollar quantity is dynamically calculated. For those with smaller
-stacks, or when `COVERAGE` wasn't adequate, the calculated quantity could end up
-being less than the exchange's minimum trade quantity requirement. Tumbleweed doesn't
-bump up against that limitation. Tumbleweed also has the ability to pause trading,
-which can have advantages over BlueCollar's aspect of always trading.
 
 ## Performance Expectations
 #### When Lambo?
