@@ -115,9 +115,30 @@ it will always be able to generate passive income except in two market environme
 1. A long-lived sideways market, aka a "frozen market"
 2. A price collapse to 0 without a rebound
 
+The image below is a nice depiction of how this strategy plays out over time. This
+trading activity is from BlueCollar, the parent program of Tumbleweed.
+
+![pv and currency flows](public/images/pv_and_currency_flows.png?raw=true)  
+
+Notice how widely the currency and coin balances/value oscillate and mirror, but
+the Total account value is generally steady upward. It should be clear why earlier
+I warned "A sell off in periods of significantly declining balances results in
+unrealized losses becoming realized, and neutralizes the trader's long term strategy."
+In the graph above in later December, the fiat account has dropped by about half.
+Operating a committed market maker over long periods can at times require a strong stomach,
+or at least trusting that overall portfolio value is a better indicator of long
+term health than what's happening to your fiat today.  
+
+The behavior BlueCollar (and to a lesser extent Tumbleweed) exhibit is markedly
+counterintuitive -- exchange the asset of appreciating value for the asset of
+depreciating value. The automation of the strategy took an approach where the program
+manages trading activity based on the settings provided by an operator. So in its
+current state, the operators's decisions about those settings are also a factor
+that influences performance.
+
 The automation of this strategy took an approach where Tumbleweed manages trading
 activity based on the settings provided by an operator. So in its current state,
-the trader's decisions are a factor that influences performance.
+the operators's about those settings are also a factor that influences performance.
 
 #### Characteristics
 * No use of Technical Analysis (TA). It is purely reactive to events affecting the
