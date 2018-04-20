@@ -136,12 +136,8 @@ manages trading activity based on the settings provided by an operator. So in it
 current state, the operators's decisions about those settings are also a factor
 that influences performance.
 
-The automation of this strategy took an approach where Tumbleweed manages trading
-activity based on the settings provided by an operator. So in its current state,
-the operators's about those settings are also a factor that influences performance.
-
 For a look at _BlueCollar's_ longer term performance over a variety of market movement you can
-see this ![wiki page](https://github.com/AlbatrossAutomated/blue_collar_gdax/wiki/Performance).  
+see this [wiki page](https://github.com/AlbatrossAutomated/blue_collar_gdax/wiki/Performance).  
 
 #### Characteristics
 * No use of Technical Analysis (TA). It is purely reactive to events affecting the
