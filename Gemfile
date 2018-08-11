@@ -6,7 +6,7 @@ gem 'pg'
 gem 'rake'
 gem 'awesome_print'
 gem 'coinbase-exchange', '0.1.1'
-gem 'sinatra'
+gem 'sinatra', '~> 2.0.2'
 gem 'dotenv-rails'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
@@ -16,7 +16,7 @@ gem 'puma', '~> 3.0'
 gem 'clockwork', require: false
 gem 'active_attr'
 
-# needed in prod git pushing Heroku
+# needed in prod if git pushing Heroku
 gem 'brakeman', :require => false
 gem 'bundler-audit', :require => false
 gem 'rubocop', require: false
