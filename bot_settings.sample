@@ -9,7 +9,7 @@ class BotSettings
     PRINT_MANTRA = true
     HOARD_QUOTE_PROFITS = true
     BASE_CURRENCY_STASH = 0.0 # percent as decimal - amount of profit to realize in base currency
-    ORDER_BACKFILLING = false # DANGER!! backfill orders when trading resumes at a lower price than when it was stopped
+    ORDER_BACKFILLING = false # DANGER!! If true, this will backfill orders when trader resumes at a lower price than when it was stopped
     CANCEL_RETRIES = 15 # nominal
     RESERVE = 0.0 # nominal amount of funds in your exchange account to isolate from Tumbleweed trading
     CHILL_PARAMS = { consecutive_buys: 10, wait_time: 30 }.freeze # wait_time in minutes
