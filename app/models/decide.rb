@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 class Decide
+  extend Rounding
+
   class << self
 
     def scrum_params
-      bid = RequestUsher.execute('quote')['bids'][0][0].to_f.round(2)
+      best_bid = RequestUsher.execute('quote')['bids'][0][0].to_f
+      bid = round_to_qc_tick(best_bid)
 
       {
         bid: bid,
@@ -13,7 +16,7 @@ class Decide
     end
 
     def buy_down_params(previous_bid)
-      bid = (previous_bid - BotSettings::BUY_DOWN_INTERVAL).round(2)
+      bid = round_to_qc_tick(previous_bid - BotSettings::BUY_DOWN_INTERVAL)
       Bot.log("BDI: #{BotSettings::BUY_DOWN_INTERVAL}. Buy Down Bid: #{bid}")
 
       {
@@ -27,7 +30,7 @@ class Decide
       # write lags.
       lowest_ask = FlippedTrade.lowest_ask
       straddle = BotSettings::BUY_DOWN_INTERVAL + BotSettings::PROFIT_INTERVAL
-      bid = (lowest_ask - straddle).round(2)
+      bid = round_to_qc_tick(lowest_ask - straddle)
 
       {
         bid: bid,
@@ -40,7 +43,7 @@ class Decide
     end
 
     def valid_buy_quantity(quantity)
-      quantity = quantity.round(8)
+      quantity = round_to_bc_tick(quantity)
       min_allowed = ENV['MIN_TRADE_AMT'].to_f
 
       return quantity if quantity >= min_allowed
@@ -51,10 +54,10 @@ class Decide
       funds = RequestUsher.execute('funds')
       currency = ENV['QUOTE_CURRENCY']
       balance = funds.find { |fund| fund['currency'] == currency }['available'].to_f
-      hoard = BotSettings::HOARD_QUOTE_PROFITS ? QuoteCurrencyProfit.current_trade_cycle : 0.0
+      hoard = BotSettings::HOARD_QC_PROFITS ? QuoteCurrencyProfit.current_trade_cycle : 0.0
       reserve = BotSettings::RESERVE
 
-      (balance - hoard - reserve).round(2)
+      round_to_qc_tick(balance - hoard - reserve)
     end
 
     def affordable?(params)
@@ -69,7 +72,8 @@ class Decide
       # Assume the buy_order will be a 'taker' and incur a fee when determining
       # affordability.
 
-      ((params[:bid] * params[:quantity]) * (1 + ENV['BUY_FEE'].to_f)).round(2)
+      cost = ((params[:bid] * params[:quantity]) * (1 + ENV['BUY_FEE'].to_f))
+      round_to_qc_tick(cost)
     end
 
     def bid_again?(current_bid)
@@ -132,7 +136,8 @@ class Decide
     end
 
     def calculate_sell_params(buy_price, buy_quantity, cost)
-      projected_revenue = (buy_price + BotSettings::PROFIT_INTERVAL).round(2) * buy_quantity
+      sell_price = round_to_qc_tick(buy_price + BotSettings::PROFIT_INTERVAL)
+      projected_revenue = sell_price * buy_quantity
       profit_without_stash = projected_revenue - cost
 
       return breakeven_sell_params(buy_quantity, cost, profit_without_stash) if profit_without_stash.negative?
@@ -145,8 +150,8 @@ class Decide
       # Some orders' breakeven prices will result in a slightly positive (rev - cost),
       # so maybe it evens out. Adding a penny is assurance for a slightly positive result.
 
-      ask = (cost / buy_quantity).round(2) + 0.01
-      msg = "#{ENV['QUOTE_CURRENCY']} Profit would be #{profit_without_stash.round(8)}. " +
+      ask = round_to_qc_tick(cost / buy_quantity) + ENV['QC_TICK_SIZE'].to_f
+      msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{round_to_qc_tick(profit_without_stash)}. " +
             "Selling at breakeven: #{ask}."
       Bot.log(msg, nil, :warn)
 
@@ -157,13 +162,13 @@ class Decide
     end
 
     def profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
-      ask = (buy_price + BotSettings::PROFIT_INTERVAL)
+      ask = buy_price + BotSettings::PROFIT_INTERVAL
 
-      if BotSettings::BASE_CURRENCY_STASH.zero?
+      if BotSettings::BC_STASH.zero?
         log_sell_side(ask, profit_without_stash, 0.0)
 
         {
-          ask: ask.round(2),
+          ask: round_to_qc_tick(ask),
           quantity: buy_quantity
         }
       else
@@ -172,7 +177,7 @@ class Decide
     end
 
     def stash_sell_params(ask, buy_quantity, cost, profit_without_stash)
-      profit_after_stash = profit_without_stash * (1.0 - BotSettings::BASE_CURRENCY_STASH)
+      profit_after_stash = profit_without_stash * (1.0 - BotSettings::BC_STASH)
       quantity_less_stash = (profit_after_stash + cost) / ask
 
       if quantity_less_stash <= ENV['MIN_TRADE_AMT'].to_f
@@ -182,25 +187,25 @@ class Decide
         log_sell_side(ask, profit_after_stash, stash)
 
         {
-          ask: ask.round(2),
-          quantity: quantity_less_stash.round(8)
+          ask: round_to_qc_tick(ask),
+          quantity: round_to_bc_tick(quantity_less_stash)
         }
       end
     end
 
     def skip_stashing_params(ask, buy_quantity, profit_without_stash, quantity_less_stash)
-      Bot.log("Sell size after stash would be invalid (#{quantity_less_stash.round(8)}). Skipping stashing.")
+      Bot.log("Sell size after stash would be invalid (#{round_to_bc_tick(quantity_less_stash)}). Skipping stashing.")
       log_sell_side(ask, profit_without_stash, 0.0)
 
       {
-        ask: ask.round(8),
+        ask: round_to_qc_tick(ask),
         quantity: buy_quantity
       }
     end
 
     def log_sell_side(ask, quote_profit, base_profit)
-      msg = "Selling at #{ask.round(2)} for an estimated profit of #{quote_profit.round(8)} " +
-            "#{ENV['QUOTE_CURRENCY']} and #{base_profit.round(8)} #{ENV['BASE_CURRENCY']}."
+      msg = "Selling at #{round_to_qc_tick(ask)} for an estimated profit of #{round_to_qc_tick(quote_profit)} " +
+            "#{ENV['QUOTE_CURRENCY']} and #{round_to_bc_tick(base_profit)} #{ENV['BASE_CURRENCY']}."
       Bot.log(msg)
     end
 
@@ -215,14 +220,14 @@ class Decide
     #   Optimitic:
     #                    P * Q + buy_fee + QUOTE_CURRENCY_PROFIT
     #                 ---------------------------------------------
-    #                         Q - BASE_CURRENCY_STASH
+    #                         Q - BC_STASH
     #
     #   Pessimistic:
     #                   (P * Q + buy_fee + QUOTE_CURRENCY_PROFIT)
     #                 ---------------------------------------------
     #                               1 - SELL_FEE
     #        ---------------------------------------------------------------
-    #                         Q - BASE_CURRENCY_STASH
+    #                         Q - BC_STASH
     # end
   end
 end

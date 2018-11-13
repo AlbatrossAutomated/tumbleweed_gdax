@@ -186,7 +186,7 @@ RSpec.describe Decide, type: :model do
       end
 
       context 'quote currency is _not_ being withheld from risk pool' do
-        before { stub_const("BotSettings::HOARD_QUOTE_PROFITS", false) }
+        before { stub_const("BotSettings::HOARD_QC_PROFITS", false) }
 
         it 'returns the quote currency balance' do
           expect(Decide.quote_currency_balance).to eq quote_currency_balance.round(2)
@@ -367,10 +367,10 @@ RSpec.describe Decide, type: :model do
     end
 
     context 'base currency _is_ being stashed' do
-      before { stub_const("BotSettings::BASE_CURRENCY_STASH", 0.1) }
+      before { stub_const("BotSettings::BC_STASH", 0.1) }
 
       describe '.sell_params' do
-        let(:stash) { BotSettings::BASE_CURRENCY_STASH }
+        let(:stash) { BotSettings::BC_STASH }
         let(:expected_ask) do
           (buy_price + BotSettings::PROFIT_INTERVAL).round(2)
         end

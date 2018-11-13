@@ -514,7 +514,7 @@ to the cost of the buy.
 
 <u>_Other Appetite Settings_</u>  
 
-**`HOARD_QUOTE_PROFITS`**  
+**`HOARD_QC_PROFITS`**  
 Boolean (default is `true`): separate cumulative quote currency profits from the
 available funds to trade with, or include them.  
 
@@ -528,7 +528,7 @@ changed.
 end up in pending sell orders, the option to give the hoarded gains to Tumbleweed
 for leveraging would be on the table.
 
-**`BASE_CURRENCY_STASH`**  
+**`BC_STASH`**  
 Float (default is 0.0): A percent of per sell profit as decimal, 0.0 to 1.0.
 
 * For example, if this was set at 20% and quote profit (USD) was $0.05, then $0.01

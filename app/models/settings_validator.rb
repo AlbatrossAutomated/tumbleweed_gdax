@@ -14,7 +14,7 @@ class SettingsValidator
     end
 
     def validate_base_currency_stash
-      return if BotSettings::BASE_CURRENCY_STASH.between?(0.0, 1.0)
+      return if BotSettings::BC_STASH.between?(0.0, 1.0)
       msg = "Base currency stash invalid: Must be in the range 0.0 - 1.0"
       raise CriticalError, msg
     end

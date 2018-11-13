@@ -20,7 +20,7 @@ RSpec.describe SettingsValidator, type: :model do
       "Base currency stash invalid: Must be in the range 0.0 - 1.0"
     end
 
-    before { stub_const("BotSettings::BASE_CURRENCY_STASH", 1.1) }
+    before { stub_const("BotSettings::BC_STASH", 1.1) }
 
     it "raises a CriticalError" do
       expect { SettingsValidator.validate_base_currency_stash }.to raise_error(CriticalError, err_msg)

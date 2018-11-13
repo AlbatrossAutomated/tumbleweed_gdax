@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class FlippedTrade < ApplicationRecord
+  extend Rounding
+
   scope :sold, -> { where(sell_pending: false) }
   scope :pending_sells, -> { where(sell_pending: true) }
 
@@ -97,9 +99,12 @@ class FlippedTrade < ApplicationRecord
 
   def finalize_trade
     self.sell_pending = false
-    msg = "Id: #{id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{quote_currency_profit.round(8)}, " +
+
+    qc_profit_msg = FlippedTrade.round_to_qc_tick(quote_currency_profit)
+    msg = "Id: #{id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{qc_profit_msg}, " +
           "Profit (#{ENV['BASE_CURRENCY']}): #{base_currency_profit}, Fee: #{sell_fee}."
     Bot.log(msg)
+
     save
   end
 end
