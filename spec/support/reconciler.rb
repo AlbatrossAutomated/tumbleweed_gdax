@@ -36,7 +36,7 @@ RSpec.shared_examples_for 'a flipped trade reconciler' do
 
   it 'logs the actual profit' do
     subject
-    msg = "Id: #{ft.id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{ft.quote_currency_profit.round(8)}, " +
+    msg = "Id: #{ft.id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{qc_tick_rounded(ft.quote_currency_profit)}, " +
           "Profit (#{ENV['BASE_CURRENCY']}): #{ft.base_currency_profit}, Fee: #{ft.sell_fee}."
 
     expect(Bot).to have_received(:log).with(msg)

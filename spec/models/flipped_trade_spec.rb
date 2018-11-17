@@ -27,7 +27,7 @@ RSpec.describe FlippedTrade, type: :model do
 
     describe '.quote_currency_profit' do
       it "returns the sum of all records' quote_currency profits" do
-        total_profit = (completed_count * profit).round(2)
+        total_profit = qc_tick_rounded(completed_count * profit)
         expect(FlippedTrade.quote_currency_profit).to eq total_profit
       end
     end

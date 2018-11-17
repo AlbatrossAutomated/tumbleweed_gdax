@@ -29,7 +29,7 @@ RSpec.describe PerformanceMetric, type: :model do
     let(:quote_val_of_base) { best_bid * (base_bal + base_currency_for_sale) }
     let(:quote_val) { quote_bal + quote_val_of_base + cost_of_buy }
     let(:log_msg) do
-      "Portfolio Value: #{quote_val.round(2)}"
+      "Portfolio Value: #{qc_tick_rounded(quote_val)}"
     end
     let(:trades) { FlippedTrade.all }
     let(:flipped) { trades.where(sell_pending: false) }

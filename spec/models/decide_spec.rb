@@ -11,7 +11,7 @@ RSpec.describe Decide, type: :model do
   let(:quote_currency_profit) { BigDecimal.new('1605.38') }
   let(:quote_currency_reserve) { BotSettings::RESERVE }
   let(:available_quote_currency) do
-    (quote_currency_balance - quote_currency_profit - quote_currency_reserve).round(2)
+    qc_tick_rounded(quote_currency_balance - quote_currency_profit - quote_currency_reserve)
   end
   let(:buy_down_interval) { BotSettings::BUY_DOWN_INTERVAL }
   let(:accum_profit) { quote_currency_profit }
@@ -108,7 +108,7 @@ RSpec.describe Decide, type: :model do
 
         context 'order filled before checking bid' do
           # best_bid will be less than current in this case
-          let(:high_bid) { (best_bid_on_exchange + 0.01).round(2) }
+          let(:high_bid) { (qc_tick_rounded(best_bid_on_exchange) + ENV['QC_TICK_SIZE'].to_f) }
           let(:bid) { high_bid }
 
           it 'returns false' do
@@ -118,7 +118,7 @@ RSpec.describe Decide, type: :model do
 
         context 'current bid is less than best bid on exchange' do
           let(:log_msg) { "BID too low. Best bid: #{best_bid_on_exchange}." }
-          let(:low_bid) { best_bid_on_exchange - 0.01 }
+          let(:low_bid) { best_bid_on_exchange - ENV['QC_TICK_SIZE'].to_f }
           let(:bid) { low_bid }
 
           before { allow(Bot).to receive(:log) }
@@ -137,7 +137,7 @@ RSpec.describe Decide, type: :model do
 
     describe '.buy_down_params' do
       let(:previous_bid) { 11.22 }
-      let(:bid) { (previous_bid - buy_down_interval).round(2) }
+      let(:bid) { qc_tick_rounded(previous_bid - buy_down_interval) }
       let(:price_log_msg) do
         "BDI: #{buy_down_interval}. Buy Down Bid: #{bid}"
       end
@@ -145,7 +145,7 @@ RSpec.describe Decide, type: :model do
 
       let(:cov_log_msg) do
         "COVERAGE: #{BotSettings::COVERAGE * 100}%." +
-          " Covered to: $#{covered_to_price.round(2)}."
+          " Covered to: $#{qc_tick_rounded(covered_to_price)}."
       end
 
       subject { Decide.buy_down_params(previous_bid) }
@@ -179,7 +179,7 @@ RSpec.describe Decide, type: :model do
 
           it 'returns the quote currency balance less cummulative profit less RESERVE amount' do
             less_profit = quote_currency_balance - quote_currency_profit
-            tradable_balance = (less_profit - quote_currency_reserve).round(2)
+            tradable_balance = qc_tick_rounded(less_profit - quote_currency_reserve)
             expect(Decide.quote_currency_balance).to eq tradable_balance
           end
         end
@@ -189,14 +189,14 @@ RSpec.describe Decide, type: :model do
         before { stub_const("BotSettings::HOARD_QC_PROFITS", false) }
 
         it 'returns the quote currency balance' do
-          expect(Decide.quote_currency_balance).to eq quote_currency_balance.round(2)
+          expect(Decide.quote_currency_balance).to eq qc_tick_rounded(quote_currency_balance)
         end
 
         context 'a positive RESERVE value is set' do
           before { stub_const("BotSettings::RESERVE", 210.23) }
 
           it 'returns the quote currency balance less RESERVE amount' do
-            tradable_balance = (quote_currency_balance - quote_currency_reserve).round(2)
+            tradable_balance = qc_tick_rounded(quote_currency_balance - quote_currency_reserve)
             expect(Decide.quote_currency_balance).to eq tradable_balance
           end
         end
@@ -209,7 +209,7 @@ RSpec.describe Decide, type: :model do
       let(:profit_interval) { BotSettings::PROFIT_INTERVAL }
       let(:buy_down_interval) { BotSettings::BUY_DOWN_INTERVAL }
       let(:straddle) { profit_interval + buy_down_interval }
-      let(:bid) { (lowest_ask - straddle).round(2) }
+      let(:bid) { qc_tick_rounded(lowest_ask - straddle) }
 
       subject { Decide.rebuy_params }
 
@@ -234,10 +234,10 @@ RSpec.describe Decide, type: :model do
     context 'base currency is _not_ being stashed' do
       describe '.sell_params' do
         let(:expected_ask) do
-          (buy_price + BotSettings::PROFIT_INTERVAL).round(2)
+          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
         end
         let(:projected_revenue) do
-          (buy_price + BotSettings::PROFIT_INTERVAL).round(2) * sell_quantity
+          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL) * sell_quantity
         end
         let(:profit) { projected_revenue - buy_costs }
 
@@ -246,7 +246,7 @@ RSpec.describe Decide, type: :model do
         context 'no fee incurred on buy' do
           let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
           let(:log_msg2) do
-            "Selling at #{expected_ask} for an estimated profit of #{profit.round(8)} " +
+            "Selling at #{expected_ask} for an estimated profit of #{qc_tick_rounded(profit)} " +
               "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
           end
 
@@ -344,7 +344,7 @@ RSpec.describe Decide, type: :model do
             let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
             let(:buy_order) { filled_buy_order }
             let(:cost) { (price * quantity) + fee }
-            let(:expected_breakeven_ask) { (cost / quantity).round(2) + 0.01 }
+            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_TICK_SIZE'].to_f }
             let(:breakeven_msg) { /Selling at breakeven/ }
 
             before do
@@ -372,26 +372,26 @@ RSpec.describe Decide, type: :model do
       describe '.sell_params' do
         let(:stash) { BotSettings::BC_STASH }
         let(:expected_ask) do
-          (buy_price + BotSettings::PROFIT_INTERVAL).round(2)
+          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
         end
         let(:projected_revenue) do
-          (buy_price + BotSettings::PROFIT_INTERVAL).round(2) * sell_quantity
+          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL) * sell_quantity
         end
         let(:profit_without_stash) { projected_revenue - buy_costs }
         let(:profit_with_stash) { profit_without_stash * (1.0 - stash) }
         let(:sell_quantity_less_stash) do
-          ((profit_with_stash + buy_costs) / expected_ask).round(8)
+          bc_tick_rounded((profit_with_stash + buy_costs) / expected_ask)
         end
 
         subject { Decide.sell_params(buy_order) }
 
         context 'no fee incurred on buy' do
           let(:base_currency_profit) do
-            (sell_quantity - sell_quantity_less_stash).round(8)
+            bc_tick_rounded(sell_quantity - sell_quantity_less_stash)
           end
           let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
           let(:log_msg2) do
-            "Selling at #{expected_ask} for an estimated profit of #{profit_with_stash.round(8)} " +
+            "Selling at #{expected_ask} for an estimated profit of #{qc_tick_rounded(profit_with_stash)} " +
               "#{ENV['QUOTE_CURRENCY']} and #{base_currency_profit} #{ENV['BASE_CURRENCY']}."
           end
 
@@ -435,7 +435,7 @@ RSpec.describe Decide, type: :model do
               filled_buy_order.merge('filled_size' => quantity)
             end
             let(:log_msg) do
-              "Sell size after stash would be invalid (#{sell_quantity_less_stash.round(8)}). " +
+              "Sell size after stash would be invalid (#{sell_quantity_less_stash}). " +
                 "Skipping stashing."
             end
 
@@ -513,8 +513,9 @@ RSpec.describe Decide, type: :model do
             let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
             let(:buy_order) { filled_buy_order }
             let(:cost) { (price * quantity) + fee }
-            let(:expected_breakeven_ask) { (cost / quantity).round(2) + 0.01 }
+            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_TICK_SIZE'].to_f }
             let(:breakeven_msg) { /Selling at breakeven/ }
+
             before do
               stub_const("BotSettings::PROFIT_INTERVAL", 0.02)
               allow(Bot).to receive(:log)

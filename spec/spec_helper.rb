@@ -39,7 +39,7 @@ RSpec.configure do |config|
 
   # request faking
   config.before(:each) do
-    stub_request(:any, /api.gdax.com/).to_rack(FakeExchange)
+    stub_request(:any, /api.pro.coinbase.com/).to_rack(FakeExchange)
   end
 
   # rspec-mocks config goes here. You can use an alternate test double
