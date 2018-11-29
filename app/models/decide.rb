@@ -148,7 +148,8 @@ class Decide
       # Because rounding has to occur at the decimal places of the exchange tick-size,
       # (rev - cost) can end up being slightly negative at a rounded breakeven price.
       # Some orders' breakeven prices will result in a slightly positive (rev - cost),
-      # so maybe it evens out. Adding a penny is assurance for a slightly positive result.
+      # so maybe it evens out. Adding a 'QC_TICK_SIZE' is assurance for a slightly
+      # positive result for the ones that would otherwise be slightly negative.
 
       ask = round_to_qc_tick(cost / buy_quantity) + ENV['QC_TICK_SIZE'].to_f
       msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{round_to_qc_tick(profit_without_stash)}. " +

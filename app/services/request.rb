@@ -52,5 +52,13 @@ class Request
     def cancel_order(order_id)
       @client.cancel(order_id)
     end
+
+    def products
+      @client.products
+    end
+
+    def currencies
+      @client.currencies
+    end
   end
 end
