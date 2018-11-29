@@ -209,26 +209,5 @@ class Decide
             "#{ENV['QUOTE_CURRENCY']} and #{round_to_bc_tick(base_profit)} #{ENV['BASE_CURRENCY']}."
       Bot.log(msg)
     end
-
-    # def _ask_price(buy_order)
-    # WIP - Old reformulation from when BDI was dynamic
-    #   Optimistic sell price determination assumes that sell orders
-    #   will not incur a taker fee. Pessimistic assumes they will.
-    #
-    #   Q = Quantity purchased on the buy
-    #   P = Price of the buy
-    #
-    #   Optimitic:
-    #                    P * Q + buy_fee + QUOTE_CURRENCY_PROFIT
-    #                 ---------------------------------------------
-    #                         Q - BC_STASH
-    #
-    #   Pessimistic:
-    #                   (P * Q + buy_fee + QUOTE_CURRENCY_PROFIT)
-    #                 ---------------------------------------------
-    #                               1 - SELL_FEE
-    #        ---------------------------------------------------------------
-    #                         Q - BC_STASH
-    # end
   end
 end
