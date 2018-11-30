@@ -34,6 +34,8 @@ gem 'rubocop', require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
 
+gem 'bootsnap', require: false
+
 group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
@@ -53,7 +55,9 @@ end
 group :test do
   gem 'json_spec'
   gem 'database_cleaner'
-  gem 'webmock', '3.0.1', require: false
+  # IMPORTANT! - Use caution when upgrading webmock
+  # Currently any version past 3.1.1 makes live requests to the exchange API on spec runs. Yikes!!
+  gem 'webmock', '3.1.1', require: false
   gem 'shoulda-matchers', require: false
   gem 'simplecov'
   gem 'fantaskspec'

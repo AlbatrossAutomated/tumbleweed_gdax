@@ -56,6 +56,8 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     bigdecimal (1.3.5)
     bindex (0.5.0)
+    bootsnap (1.3.2)
+      msgpack (~> 1.0)
     brakeman (4.3.1)
     builder (3.2.3)
     bundler-audit (0.6.0)
@@ -141,6 +143,7 @@ GEM
     mini_mime (1.0.1)
     mini_portile2 (2.3.0)
     minitest (5.11.3)
+    msgpack (1.2.4)
     multi_json (1.13.1)
     mustermann (1.0.3)
     nio4r (2.3.1)
@@ -274,7 +277,7 @@ GEM
       activemodel (>= 5.0)
       bindex (>= 0.4.0)
       railties (>= 5.0)
-    webmock (3.0.1)
+    webmock (3.1.1)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff
@@ -288,6 +291,7 @@ PLATFORMS
 DEPENDENCIES
   active_attr
   awesome_print
+  bootsnap
   brakeman
   bundler-audit
   byebug
@@ -314,7 +318,7 @@ DEPENDENCIES
   spring-watcher-listen
   tzinfo-data
   web-console
-  webmock (= 3.0.1)
+  webmock (= 3.1.1)
 
 RUBY VERSION
    ruby 2.5.1p57

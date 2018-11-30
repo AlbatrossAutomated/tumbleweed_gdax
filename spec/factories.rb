@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# require_relative 'support/bot_settings'
-
 FactoryBot.define do
   sequence :exchange_order_id, &:to_s
   sequence :quote_currency_balance, rand(5000..6000) { |n| n }
