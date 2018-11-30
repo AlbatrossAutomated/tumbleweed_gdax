@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'support/bot_settings'
+# require_relative 'support/bot_settings'
 
 FactoryBot.define do
   sequence :exchange_order_id, &:to_s

@@ -2,7 +2,6 @@
 
 require 'webmock/rspec'
 require 'fantaskspec'
-require 'support/bot_settings'
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
@@ -39,9 +38,24 @@ RSpec.configure do |config|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
-  # request faking
   config.before(:each) do
+    # fake requests
     stub_request(:any, /api.pro.coinbase.com/).to_rack(FakeExchange)
+
+    # fake settings
+    # can be changed
+    stub_const('BotSettings::QUANTITY', 1.1)
+    stub_const('BotSettings::BUY_DOWN_INTERVAL', 0.2)
+    stub_const('BotSettings::PROFIT_INTERVAL', 0.3)
+    stub_const('BotSettings::PRINT_MANTRA', false)
+    stub_const('BotSettings::ORDER_BACKFILLING', false)
+    stub_const('BotSettings::CANCEL_RETRIES', 10)
+
+    # currently should not be changed
+    stub_const('BotSettings::CHILL_PARAMS', consecutive_buys: 3, wait_time: 1)
+    stub_const('BotSettings::RESERVE', 0.0)
+    stub_const('BotSettings::BC_STASH', 0.0)
+    stub_const('BotSettings::HOARD_QC_PROFITS', true)
   end
 
   # rspec-mocks config goes here. You can use an alternate test double
