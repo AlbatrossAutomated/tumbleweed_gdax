@@ -1,24 +1,24 @@
 source 'https://rubygems.org'
 
-ruby '2.4.2'
+ruby '2.5.1'
 
 gem 'pg'
 gem 'rake'
 gem 'awesome_print'
 gem 'coinbase-exchange', '0.1.1'
-gem 'sinatra', '~> 2.0.2'
+gem 'sinatra'
 gem 'dotenv-rails'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.1.5'
+gem 'rails', '5.2.0'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 gem 'clockwork', require: false
 gem 'active_attr'
 
 # needed in prod if git pushing Heroku
-gem 'brakeman', :require => false
-gem 'bundler-audit', :require => false
+gem 'brakeman', require: false
+gem 'bundler-audit', require: false
 gem 'rubocop', require: false
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
@@ -35,12 +35,8 @@ gem 'rubocop', require: false
 # gem 'rack-cors'
 
 group :development, :test do
-  gem 'factory_girl'
-  gem 'rspec'
   gem 'rspec-rails'
-  gem 'json_spec'
-  gem 'database_cleaner'
-  gem 'shoulda-matchers', '~> 2.8.0', require: false
+  gem 'factory_bot_rails'
   gem 'rails_best_practices', require: false
   gem 'reek', require: false
   gem 'byebug', platform: :mri
@@ -48,16 +44,18 @@ end
 
 group :development do
   gem 'web-console'
-  gem 'listen', '~> 3.0.5'
+  gem 'listen'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
+  gem 'spring-watcher-listen'
 end
 
 group :test do
+  gem 'json_spec'
+  gem 'database_cleaner'
+  gem 'webmock', '3.0.1', require: false
+  gem 'shoulda-matchers', require: false
   gem 'simplecov'
-  gem 'webmock'
-  gem 'factory_girl_rails', '~> 4.0'
   gem 'fantaskspec'
 end
 

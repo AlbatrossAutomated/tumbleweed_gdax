@@ -13,11 +13,9 @@ class RequestUsher
     def execute(meth, *args)
       begin
         throttle
-
         resp = JSON.parse(Request.send(meth, *args))
       rescue StandardError => e # There are only two errors to not retry
         Bot.log("API ERROR! Msg: #{e.message}, Class: #{e.class}. ", e, :error)
-
         retry unless pass_thru_error?(e.message)
       end
 
