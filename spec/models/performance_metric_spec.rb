@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe PerformanceMetric, type: :model do
+  include Rounding
+
   describe '.record' do
     let(:quote) { JSON.parse(file_fixture('quote.json').read) }
     let(:best_bid) { BigDecimal.new(quote['bids'][0][0]) }

@@ -100,7 +100,7 @@ class FlippedTrade < ApplicationRecord
   def finalize_trade
     self.sell_pending = false
 
-    qc_profit_msg = FlippedTrade.round_to_qc_tick(quote_currency_profit)
+    qc_profit_msg = FlippedTrade.qc_tick_rounded(quote_currency_profit)
     msg = "Id: #{id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{qc_profit_msg}, " +
           "Profit (#{ENV['BASE_CURRENCY']}): #{base_currency_profit}, Fee: #{sell_fee}."
     Bot.log(msg)

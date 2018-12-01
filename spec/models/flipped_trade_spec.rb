@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe FlippedTrade, type: :model do
+  include Rounding
+
   describe 'class methods' do
     let(:profit) { 0.05 }
     let(:flipped_trades) do

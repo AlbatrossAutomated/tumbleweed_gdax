@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe Decide, type: :model do
+  include Rounding
+
   let(:buy_fee_percent) { ENV['BUY_FEE'].to_f }
   let(:funds) { JSON.parse(file_fixture('funds.json').read) }
   let(:quote_currency_balance) do

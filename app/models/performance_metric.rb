@@ -6,7 +6,7 @@ class PerformanceMetric < ApplicationRecord
   class << self
     # :base_currency_for_sale -> total base currency in pending sell orders
     # :best_bid -> best market bid at time of write
-    # :quote_currency_balance -> money in cash account
+    # :quote_currency_balance -> funds in quote currency account
     # :base_currency_balance -> unsellable_partial_buy amounts
     # :quote_currency_profit -> see QuoteCurrencyProfit#current_trade_cycle
     # :base_currency_profit -> the total base currency stashed
@@ -37,8 +37,7 @@ class PerformanceMetric < ApplicationRecord
 
     def record
       metric = create(calculate)
-      qc_pv = metric.portfolio_quote_currency_value
-      Bot.log("Portfolio Value: #{round_to_qc_tick(qc_pv)}")
+      Bot.log("Portfolio Value: #{qc_tick_rounded(metric.portfolio_quote_currency_value)}")
     end
 
     def base_currency_for_sale(funds)
