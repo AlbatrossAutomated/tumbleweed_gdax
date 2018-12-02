@@ -56,6 +56,7 @@ RSpec.describe RequestUsher do
         allow(Request).to receive(request_method) do
           count += 1
           raise(err_class, raised_error) unless count > 1
+
           resp if count == 2
         end
       end

@@ -19,16 +19,16 @@ class FlippedTrade < ApplicationRecord
   end
 
   def self.create_from_buy(buy_order)
-    price = BigDecimal.new(buy_order['price'])
-    quantity = BigDecimal.new(buy_order['filled_size'])
-    fee = BigDecimal.new(buy_order['fill_fees'])
+    price = BigDecimal(buy_order['price'])
+    quantity = BigDecimal(buy_order['filled_size'])
+    fee = BigDecimal(buy_order['fill_fees'])
 
     create(base_currency_purchased: quantity,
            buy_price: price,
            buy_fee: fee,
            cost: (price * quantity) + fee,
            buy_order_id: buy_order['id'],
-           trade_pair: ENV['PRODUCT_ID'])
+           trade_pair: buy_order['product_id'])
   end
 
   def self.lowest_ask
@@ -44,7 +44,7 @@ class FlippedTrade < ApplicationRecord
     Trader.consecutive_buys = 0
     Bot.log("Consecutive buy count set to #{Trader.consecutive_buys}")
 
-    self.sell_fee = BigDecimal.new(sold_order['fill_fees'])
+    self.sell_fee = BigDecimal(sold_order['fill_fees'])
 
     reconcile_buy_side if buy_fee > 0.0
 
@@ -72,7 +72,7 @@ class FlippedTrade < ApplicationRecord
     end
 
     cost = @fill.sum do |f|
-      BigDecimal.new(f['price']) * BigDecimal.new(f['size'])
+      BigDecimal(f['price']) * BigDecimal(f['size'])
     end
 
     self.buy_price = cost / base_currency_purchased # average price
@@ -89,7 +89,7 @@ class FlippedTrade < ApplicationRecord
     end
 
     revenue = @fill.sum do |f|
-      BigDecimal.new(f['price']) * BigDecimal.new(f['size'])
+      BigDecimal(f['price']) * BigDecimal(f['size'])
     end
 
     self.sell_price = revenue / base_currency_sold # average price
@@ -101,8 +101,8 @@ class FlippedTrade < ApplicationRecord
     self.sell_pending = false
 
     qc_profit_msg = FlippedTrade.qc_tick_rounded(quote_currency_profit)
-    msg = "Id: #{id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{qc_profit_msg}, " +
-          "Profit (#{ENV['BASE_CURRENCY']}): #{base_currency_profit}, Fee: #{sell_fee}."
+    msg = "Id: #{id}, Quote Currency Profit: #{qc_profit_msg}, " \
+          "Base Currency Stashed: #{base_currency_profit}, Fee: #{sell_fee}."
     Bot.log(msg)
 
     save

@@ -36,7 +36,7 @@ class Trader
         buy_down = place_buy_down(bid)
 
         if buy_down[:monitor_straddle]
-          straddle = monitor_straddle(buy_down[:buy_order_id], buy_down[:bid])
+          monitor_straddle(buy_down[:buy_order_id], buy_down[:bid])
         end
       end
     end
@@ -80,15 +80,15 @@ class Trader
       # inaccurate (too small). This is a write-lag/race-condition as "filled_size"
       # is eventually accurate on subsequent requests.
 
-      requested_quantity = BigDecimal.new(buy_order['size'])
-      response_quantity = BigDecimal.new(buy_order['filled_size'])
+      requested_quantity = BigDecimal(buy_order['size'])
+      response_quantity = BigDecimal(buy_order['filled_size'])
 
       return buy_order if requested_quantity == response_quantity
 
       loop do
         Bot.log("Buy order 'filled_size' innacurate", buy_order, :warn)
         @buy_order = RequestUsher.execute('order', buy_order['id'])
-        break if BigDecimal.new(@buy_order['filled_size']) == BigDecimal.new(@buy_order['size'])
+        break if BigDecimal(@buy_order['filled_size']) == BigDecimal(@buy_order['size'])
       end
 
       @buy_order
@@ -97,7 +97,7 @@ class Trader
     def place_sell(flipped_trade, buy_order)
       params = Decide.sell_params(buy_order)
       sell_resp = RequestUsher.execute('sell_order', params)
-      base_profit = BigDecimal.new(buy_order["filled_size"]) - params[:quantity]
+      base_profit = BigDecimal(buy_order["filled_size"]) - params[:quantity]
 
       flipped_trade.update_attributes(sell_price: params[:ask],
                                       sell_order_id: sell_resp['id'],
@@ -185,6 +185,7 @@ class Trader
           cancel_buy(@buy_order_id)
           break if @sell_side_stats[:pending].zero?
           break if !BotSettings::ORDER_BACKFILLING && backfill_price_gap?
+
           straddle_rebuy
         end
 
@@ -265,6 +266,7 @@ class Trader
 
     def cancel_result(order_id)
       return cancel_success(order_id) if @resp.include?(order_id)
+
       filled_before_cancel(order_id) if @resp == 'Order already done'
     end
 
@@ -281,7 +283,7 @@ class Trader
         Bot.log("Buy order response: ", buy_order)
         raise UnfilledOrderError unless buy_order['settled']
       rescue UnfilledOrderError
-        msg = "Unknown exchange error - Order returned as already done on cancel," +
+        msg = "Unknown exchange error - Order returned as already done on cancel," \
               " but was not retrieved as 'settled'. "
         Bot.log(msg, buy_order, :error)
         retry

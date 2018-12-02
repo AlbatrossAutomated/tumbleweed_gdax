@@ -7,25 +7,25 @@ RSpec.describe PerformanceMetric, type: :model do
 
   describe '.record' do
     let(:quote) { JSON.parse(file_fixture('quote.json').read) }
-    let(:best_bid) { BigDecimal.new(quote['bids'][0][0]) }
+    let(:best_bid) { BigDecimal(quote['bids'][0][0]) }
     let(:funds) { JSON.parse(file_fixture('funds.json').read) }
     let(:open_orders) { JSON.parse(file_fixture('open_orders.json').read) }
     let(:quote_bal) do
       amount = funds.detect { |fund| fund['currency'] == ENV['QUOTE_CURRENCY'] }['available']
-      BigDecimal.new(amount)
+      BigDecimal(amount)
     end
     let(:base_bal) do
       amount = funds.detect { |fund| fund['currency'] == ENV['BASE_CURRENCY'] }['available']
-      BigDecimal.new(amount)
+      BigDecimal(amount)
     end
     let(:base_currency_for_sale) do
       amount = funds.detect { |f| f['currency'] == ENV['BASE_CURRENCY'] }['hold']
-      BigDecimal.new(amount)
+      BigDecimal(amount)
     end
     let(:cost_of_buy) do
       buy_order = open_orders.select { |ord| ord['side'] == 'buy' }.compact.first
-      price = BigDecimal.new(buy_order['price'])
-      size = BigDecimal.new(buy_order['size'])
+      price = BigDecimal(buy_order['price'])
+      size = BigDecimal(buy_order['size'])
       price * size
     end
     let(:quote_val_of_base) { best_bid * (base_bal + base_currency_for_sale) }
@@ -60,7 +60,7 @@ RSpec.describe PerformanceMetric, type: :model do
       let(:base_stash) { FlippedTrade.base_currency_profit }
 
       before do
-        FlippedTrade.all.update(base_currency_profit: BigDecimal.new('0.001'))
+        FlippedTrade.all.update(base_currency_profit: BigDecimal('0.001'))
       end
 
       it_behaves_like 'a performance_metric creator'

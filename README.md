@@ -74,15 +74,9 @@ where the price generally isn't higher than where it was when it started trading
 #### Affordability  
 The more funds Tumbleweed has access to the better it will perform nominally speaking.
 The other side of that coin is that it performs better the cheaper the crypto it trades.
-At the current price of GDAX's trading pairs, this is unfortunate. I'd hoped the
-circle of financial accessibility would be much broader than where I think it is
-today given the prices of cryptos on GDAX.
-
 There's a lot of variables involved aside from the price of the crypto though,
 so there's no hard line between who can and cannot find value in developing/operating
-Tumbleweed. Nonetheless, a cheaper crypto would widen the circle, so here's hoping
-GDAX lists a thriftier crypto sometime soon, or even reduces the min trade quantity
-requirement on LTC.
+Tumbleweed.
 
 ## Strategy
 > "The market goes up the market goes down. The degree to which it does so is
@@ -94,7 +88,7 @@ requirement on LTC.
 Tumbleweed was designed as a passive income generator with a goal of resiliency
 and long-term performance in the volatile cryptocurrency markets. The ability to
 keep trading is prioritized over short term efforts to increase portfolio value
-(cash + non-cash positions). It makes gains through the accumulation of small
+(quote plus base currency positions). It makes gains through the accumulation of small
 amounts of profit from executed sells, which can be pocketed periodically by the
 operator, given back to the trader, or some combination of the two.
 

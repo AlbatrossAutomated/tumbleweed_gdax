@@ -10,7 +10,7 @@ RSpec.describe Decide, type: :model do
   let(:quote_currency_balance) do
     funds.detect { |f| f['currency'] == ENV['QUOTE_CURRENCY'] }['available'].to_f
   end
-  let(:quote_currency_profit) { BigDecimal.new('1605.38') }
+  let(:quote_currency_profit) { BigDecimal('1605.38') }
   let(:quote_currency_reserve) { BotSettings::RESERVE }
   let(:available_quote_currency) do
     qc_tick_rounded(quote_currency_balance - quote_currency_profit - quote_currency_reserve)
@@ -146,7 +146,7 @@ RSpec.describe Decide, type: :model do
       let(:covered_to_price) { previous_bid * (1 - BotSettings::COVERAGE) }
 
       let(:cov_log_msg) do
-        "COVERAGE: #{BotSettings::COVERAGE * 100}%." +
+        "COVERAGE: #{BotSettings::COVERAGE * 100}%." \
           " Covered to: $#{qc_tick_rounded(covered_to_price)}."
       end
 
@@ -227,9 +227,9 @@ RSpec.describe Decide, type: :model do
 
   context 'determining ask params' do
     let(:filled_buy_order) { JSON.parse(file_fixture('order_0.json').read) }
-    let(:buy_price) { BigDecimal.new(buy_order['price']) }
-    let(:buy_quantity) { BigDecimal.new(buy_order['filled_size']) }
-    let(:buy_fee) { BigDecimal.new(buy_order['fill_fees']) }
+    let(:buy_price) { BigDecimal(buy_order['price']) }
+    let(:buy_quantity) { BigDecimal(buy_order['filled_size']) }
+    let(:buy_fee) { BigDecimal(buy_order['fill_fees']) }
     let(:buy_costs) { (buy_price * buy_quantity) + buy_fee }
     let(:sell_quantity) { buy_quantity }
 
@@ -248,7 +248,7 @@ RSpec.describe Decide, type: :model do
         context 'no fee incurred on buy' do
           let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
           let(:log_msg2) do
-            "Selling at #{expected_ask} for an estimated profit of #{qc_tick_rounded(profit)} " +
+            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
               "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
           end
 
@@ -292,8 +292,8 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_22.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
             let(:buy_order) { filled_buy_order }
 
             before do
@@ -323,8 +323,8 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_24.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
             let(:buy_order) { filled_buy_order }
 
             before do
@@ -341,9 +341,9 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_22.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
             let(:buy_order) { filled_buy_order }
             let(:cost) { (price * quantity) + fee }
             let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_TICK_SIZE'].to_f }
@@ -393,7 +393,7 @@ RSpec.describe Decide, type: :model do
           end
           let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
           let(:log_msg2) do
-            "Selling at #{expected_ask} for an estimated profit of #{qc_tick_rounded(profit_with_stash)} " +
+            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit_with_stash)} " \
               "#{ENV['QUOTE_CURRENCY']} and #{base_currency_profit} #{ENV['BASE_CURRENCY']}."
           end
 
@@ -437,7 +437,7 @@ RSpec.describe Decide, type: :model do
               filled_buy_order.merge('filled_size' => quantity)
             end
             let(:log_msg) do
-              "Sell size after stash would be invalid (#{sell_quantity_less_stash}). " +
+              "Sell size after stash would be invalid (#{sell_quantity_less_stash}). " \
                 "Skipping stashing."
             end
 
@@ -452,7 +452,7 @@ RSpec.describe Decide, type: :model do
             end
 
             it 'returns the buy quantity and skips stashing' do
-              expect(subject[:quantity]).to eq BigDecimal.new(quantity)
+              expect(subject[:quantity]).to eq BigDecimal(quantity)
             end
           end
         end
@@ -462,9 +462,9 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_22.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
             let(:buy_costs) { actual_costs('fill_22.json') }
             let(:buy_order) { filled_buy_order }
 
@@ -486,9 +486,9 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_24.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
             let(:buy_costs) { actual_costs('fill_24.json') }
             let(:buy_order) { filled_buy_order }
 
@@ -510,9 +510,9 @@ RSpec.describe Decide, type: :model do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_22.json').read)
             end
-            let(:price) { BigDecimal.new(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal.new(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal.new(filled_buy_order['fill_fees']) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
             let(:buy_order) { filled_buy_order }
             let(:cost) { (price * quantity) + fee }
             let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_TICK_SIZE'].to_f }
@@ -545,7 +545,7 @@ RSpec.describe Decide, type: :model do
   def actual_costs(fill_file_name)
     fill = JSON.parse(file_fixture(fill_file_name).read)
     without_fee = fill.sum do |f|
-      BigDecimal.new(f['price']) * BigDecimal.new(f['size'])
+      BigDecimal(f['price']) * BigDecimal(f['size'])
     end
     without_fee + fee
   end

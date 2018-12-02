@@ -36,24 +36,24 @@ RSpec.shared_examples_for 'a flipped trade reconciler' do
 
   it 'logs the actual profit' do
     subject
-    msg = "Id: #{ft.id}, Profit (#{ENV['QUOTE_CURRENCY']}): #{qc_tick_rounded(ft.quote_currency_profit)}, " +
-          "Profit (#{ENV['BASE_CURRENCY']}): #{ft.base_currency_profit}, Fee: #{ft.sell_fee}."
+    msg = "Id: #{ft.id}, Quote Currency Profit: #{qc_tick_rounded(ft.quote_currency_profit)}, " \
+          "Base Currency Stashed: #{ft.base_currency_profit}, Fee: #{ft.sell_fee}."
 
     expect(Bot).to have_received(:log).with(msg)
   end
 
   def create_flipped_trade(buy, sell)
-    buy_size = BigDecimal.new(buy['size'])
-    buy_price = BigDecimal.new(buy['price'])
-    buy_fee = BigDecimal.new(buy['fill_fees'])
-    sell_price = BigDecimal.new(sell['price'])
-    sell_fee = BigDecimal.new(sell['fill_fees'])
-    base_profit = buy_size - BigDecimal.new(sell['size'])
+    buy_size = BigDecimal(buy['size'])
+    buy_price = BigDecimal(buy['price'])
+    buy_fee = BigDecimal(buy['fill_fees'])
+    sell_price = BigDecimal(sell['price'])
+    sell_fee = BigDecimal(sell['fill_fees'])
+    base_profit = buy_size - BigDecimal(sell['size'])
 
     create(:flipped_trade, buy_order_id: buy['id'], sell_order_id: sell['id'],
                            buy_price: buy_price, sell_price: sell_price,
                            base_currency_purchased: buy_size, sell_fee: sell_fee,
-                           buy_fee: buy_fee, trade_pair: ENV['PRODUCT_ID'],
+                           buy_fee: buy_fee, trade_pair: buy['product_id'],
                            cost: ((buy_price * buy_size) + buy_fee),
                            base_currency_profit: base_profit)
   end

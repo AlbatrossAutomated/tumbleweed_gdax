@@ -24,9 +24,10 @@ RSpec.shared_examples_for 'filled sell orders' do
   def create_flipped_trades(open_orders)
     JSON.parse(open_orders).each do |ord|
       next if ord['side'] == 'buy'
-      sell_price = BigDecimal.new(ord['price'])
+
+      sell_price = BigDecimal(ord['price'])
       buy_price = sell_price - BotSettings::PROFIT_INTERVAL
-      size = BigDecimal.new(ord['size'])
+      size = BigDecimal(ord['size'])
       create(:flipped_trade, buy_price: buy_price, base_currency_purchased: size,
                              cost: buy_price * size, sell_price: sell_price,
                              sell_order_id: ord['id'])

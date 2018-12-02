@@ -5,6 +5,7 @@ require 'sinatra/base'
 class FakeExchange < Sinatra::Base
   get "/products/#{ENV['PRODUCT_ID']}/book" do
     return json_response 200, 'depth.json' if params[:level]
+
     json_response 200, 'quote.json'
   end
 

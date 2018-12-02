@@ -8,7 +8,7 @@ class BotSettings
   HOARD_QC_PROFITS = true # set aside quote currency profits from sell orders; keep them separate from available funds to trade with 
   BC_STASH = 0.0 # percent as decimal (15% -> 0.15) - amount of profit to realize in base currency
   ORDER_BACKFILLING = false # DANGER!! If true, this will backfill orders when trader resumes at a lower price than when it was stopped
-  CANCEL_RETRIES = 15 # nominal
+  CANCEL_RETRIES = 10 # nominal
   RESERVE = 0.0 # nominal amount of funds in your exchange account to isolate from Tumbleweed trading
   CHILL_PARAMS = { consecutive_buys: 4, wait_time: 30 }.freeze # wait_time in minutes
 end

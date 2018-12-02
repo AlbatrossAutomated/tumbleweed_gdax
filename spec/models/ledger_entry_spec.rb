@@ -19,14 +19,14 @@ RSpec.describe LedgerEntry, category: :model do
 
     context 'amount' do
       it 'allows positive values when category is adjustment' do
-        entry = build(:ledger_entry, amount: BigDecimal.new('1.0'))
+        entry = build(:ledger_entry, amount: BigDecimal('1.0'))
         expect(entry.valid?).to be true
       end
 
       it 'disallows positive values for withdrawals' do
         attribs = {
           category: LedgerEntry::WITHDRAWAL,
-          amount: BigDecimal.new('1.0')
+          amount: BigDecimal('1.0')
         }
         entry = build(:ledger_entry, attribs)
 
@@ -36,7 +36,7 @@ RSpec.describe LedgerEntry, category: :model do
       it 'disallows negative values for reinvestments' do
         attribs = {
           category: LedgerEntry::REINVESTMENT,
-          amount: BigDecimal.new('-1.0')
+          amount: BigDecimal('-1.0')
         }
         entry = build(:ledger_entry, attribs)
 

@@ -24,12 +24,6 @@ Layout/ElseAlignment:
 # Cop supports --auto-correct.
 Layout/EmptyLineAfterGuardClause:
   Exclude:
-    - 'app/models/decide.rb'
-    - 'app/models/settings_validator.rb'
-    - 'app/models/trader.rb'
-    - 'spec/services/request_usher_spec.rb'
-    - 'spec/support/fake_exchange.rb'
-    - 'spec/support/filled_sells.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
@@ -43,7 +37,6 @@ Layout/EmptyLineAfterMagicComment:
 # Configuration parameters: AllowAdjacentOneLineDefs, NumberOfEmptyLines.
 Layout/EmptyLineBetweenDefs:
   Exclude:
-    - 'app/models/settings_estimator.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
@@ -66,7 +59,6 @@ Layout/EmptyLinesAroundBlockBody:
 # SupportedStyles: empty_lines, empty_lines_except_namespace, empty_lines_special, no_empty_lines, beginning_only, ending_only
 Layout/EmptyLinesAroundClassBody:
   Exclude:
-    - 'app/models/decide.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
@@ -102,21 +94,6 @@ Lint/AssignmentInCondition:
 # Cop supports --auto-correct.
 Lint/BigDecimalNew:
   Exclude:
-    - 'app/models/decide.rb'
-    - 'app/models/flipped_trade.rb'
-    - 'app/models/performance_metric.rb'
-    - 'app/models/trader.rb'
-    - 'app/models/unsellable_partial_buy.rb'
-    - 'spec/factories.rb'
-    - 'spec/models/decide_spec.rb'
-    - 'spec/models/flipped_trade_spec.rb'
-    - 'spec/models/ledger_entry_spec.rb'
-    - 'spec/models/performance_metric_spec.rb'
-    - 'spec/models/quote_currency_profit_spec.rb'
-    - 'spec/models/sentinel_spec.rb'
-    - 'spec/models/trader_spec.rb'
-    - 'spec/support/filled_sells.rb'
-    - 'spec/support/reconciler.rb'
 
 # Offense count: 1
 Lint/DuplicateMethods:
@@ -126,11 +103,10 @@ Lint/DuplicateMethods:
 # Offense count: 1
 Lint/UselessAssignment:
   Exclude:
-    - 'app/models/trader.rb'
 
 # Offense count: 6
 Metrics/AbcSize:
-  Max: 27
+  Max: 20
 
 # Offense count: 70
 # Configuration parameters: CountComments, ExcludedMethods.
@@ -141,12 +117,12 @@ Metrics/BlockLength:
 # Offense count: 3
 # Configuration parameters: CountComments.
 Metrics/ClassLength:
-  Max: 249
+  Max: 250
 
 # Offense count: 10
 # Configuration parameters: CountComments, ExcludedMethods.
 Metrics/MethodLength:
-  Max: 20
+  Max: 15
 
 # Offense count: 1
 # Configuration parameters: CountKeywordArgs.
@@ -177,10 +153,6 @@ Style/DoubleNegation:
 # Cop supports --auto-correct.
 Style/ExpandPathArguments:
   Exclude:
-    - 'bin/bundle'
-    - 'bin/setup'
-    - 'bin/update'
-    - 'spec/rails_helper.rb'
 
 # Offense count: 32
 # Cop supports --auto-correct.
@@ -193,24 +165,16 @@ Style/FrozenStringLiteralComment:
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
   Exclude:
-    - 'app/models/bot.rb'
-    - 'app/models/trader.rb'
 
 # Offense count: 1
 # Cop supports --auto-correct.
 Style/IfUnlessModifier:
   Exclude:
-    - 'app/models/trader.rb'
 
 # Offense count: 9
 # Cop supports --auto-correct.
 Style/LineEndConcatenation:
   Exclude:
-    - 'app/models/decide.rb'
-    - 'app/models/flipped_trade.rb'
-    - 'app/models/trader.rb'
-    - 'spec/models/decide_spec.rb'
-    - 'spec/support/reconciler.rb'
 
 # Offense count: 2
 Style/MixinUsage:
@@ -264,4 +228,4 @@ Style/SymbolArray:
 # Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
 # URISchemes: http, https
 Metrics/LineLength:
-  Max: 130
+  Max: 110

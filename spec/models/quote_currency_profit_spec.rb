@@ -11,7 +11,7 @@ RSpec.describe QuoteCurrencyProfit, category: :model do
 
   describe '.to_date' do
     let(:adjustment) do
-      create(:ledger_entry, amount: BigDecimal.new(entry_amt))
+      create(:ledger_entry, amount: BigDecimal(entry_amt))
     end
     let(:expected_amt) do
       trade_profit + adjustment.amount

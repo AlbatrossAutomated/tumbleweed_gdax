@@ -96,4 +96,18 @@ RSpec.describe Request do
 
     it_behaves_like 'an exchange API request with a passthrough arg'
   end
+
+  describe '.products' do
+    let(:exchange_client_method) { :products }
+    let(:described_method) { :products }
+
+    it_behaves_like 'an exchange API request'
+  end
+
+  describe '.products' do
+    let(:exchange_client_method) { :currencies }
+    let(:described_method) { :currencies }
+
+    it_behaves_like 'an exchange API request'
+  end
 end

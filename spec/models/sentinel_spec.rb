@@ -214,9 +214,9 @@ RSpec.describe Sentinel, type: :model do
     end
 
     context 'the pending buy order partially filled' do
-      let(:quantity) { BigDecimal.new(partial_buy['filled_size']) }
-      let(:buy_price) { BigDecimal.new(partial_buy['price']) }
-      let(:buy_fee) { BigDecimal.new(partial_buy['fill_fees']) }
+      let(:quantity) { BigDecimal(partial_buy['filled_size']) }
+      let(:buy_price) { BigDecimal(partial_buy['price']) }
+      let(:buy_fee) { BigDecimal(partial_buy['fill_fees']) }
       let(:buy_cost) { (quantity * buy_price) + buy_fee }
       let(:sell_price) { (buy_price + BotSettings::PROFIT_INTERVAL).round(2) }
 
@@ -236,7 +236,7 @@ RSpec.describe Sentinel, type: :model do
             expect(ft.cost).to eq buy_cost
             expect(ft.buy_order_id).to eq partial_buy['id']
             expect(ft.sell_order_id).to eq JSON.parse(partial_sell)['id']
-            expect(ft.trade_pair).to eq ENV['PRODUCT_ID']
+            expect(ft.trade_pair).to eq JSON.parse(partial_sell)['product_id']
           end
         end
 
@@ -260,7 +260,7 @@ RSpec.describe Sentinel, type: :model do
             expect(ft.cost).to eq buy_cost
             expect(ft.buy_order_id).to eq partial_buy['id']
             expect(ft.sell_order_id).to eq JSON.parse(partial_sell)['id']
-            expect(ft.trade_pair).to eq ENV['PRODUCT_ID']
+            expect(ft.trade_pair).to eq JSON.parse(partial_sell)['product_id']
           end
         end
       end
@@ -353,7 +353,7 @@ RSpec.describe Sentinel, type: :model do
             expect(ft.base_currency_purchased).to eq quantity
             expect(ft.buy_order_id).to eq buy_order_id
             expect(ft.sell_order_id).to eq JSON.parse(partial_sell)['id']
-            expect(ft.trade_pair).to eq ENV['PRODUCT_ID']
+            expect(ft.trade_pair).to eq JSON.parse(partial_sell)['product_id']
           end
         end
       end
@@ -365,13 +365,13 @@ RSpec.describe Sentinel, type: :model do
   # describe '.take_profit' do
   #   let(:price) { '11.00' }
   #   let(:pend_sell1) do
-  #     create(:flipped_trade, buy_price: BigDecimal.new('11.10'))
+  #     create(:flipped_trade, buy_price: BigDecimal('11.10'))
   #   end
   #   let(:pend_sell2) do
-  #     create(:flipped_trade, buy_price: BigDecimal.new('11.05'))
+  #     create(:flipped_trade, buy_price: BigDecimal('11.05'))
   #   end
   #   let(:pend_sell3) do
-  #     create(:flipped_trade, buy_price: BigDecimal.new('11.00'))
+  #     create(:flipped_trade, buy_price: BigDecimal('11.00'))
   #   end
   #   let(:pend_sells) { [pend_sell1, pend_sell2, pend_sell3] }
   #   let(:executed_sell) { create(:flipped_trade, :sell_executed) }
@@ -397,7 +397,7 @@ RSpec.describe Sentinel, type: :model do
   #
   #   it 'updates the sell_price to the consolidated price' do
   #     fts = FlippedTrade.find(ids)
-  #     expect(fts.map(&:sell_price).uniq).to eq [BigDecimal.new(price)]
+  #     expect(fts.map(&:sell_price).uniq).to eq [BigDecimal(price)]
   #   end
   #
   #   it 'updates sell_pending to false' do
@@ -409,14 +409,14 @@ RSpec.describe Sentinel, type: :model do
   #     ids.each do |id|
   #       ft = FlippedTrade.find(id)
   #       ft_cost = ft.buy_price * ft.base_currency_purchased
-  #       ft_revenue = ft.base_currency_purchased * BigDecimal.new(price)
-  #       expect(ft.quote_currency_profit).to eq BigDecimal.new(ft_revenue - ft_cost)
+  #       ft_revenue = ft.base_currency_purchased * BigDecimal(price)
+  #       expect(ft.quote_currency_profit).to eq BigDecimal(ft_revenue - ft_cost)
   #     end
   #   end
   #
   #   context 'a sell_fee is incurred on the consolidated sell' do
   #     let(:fee) { '0.97856' }
-  #     let(:per_ft_fee) { BigDecimal.new(fee) / pend_sells.count }
+  #     let(:per_ft_fee) { BigDecimal(fee) / pend_sells.count }
   #
   #     it 'updates the sell_fee of consolidated sells equally' do
   #       fts = FlippedTrade.find(ids)

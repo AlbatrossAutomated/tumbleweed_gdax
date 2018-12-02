@@ -4,7 +4,6 @@ class Decide
   extend Rounding
 
   class << self
-
     def scrum_params
       best_bid = RequestUsher.execute('quote')['bids'][0][0].to_f
       bid = qc_tick_rounded(best_bid)
@@ -47,6 +46,7 @@ class Decide
       min_allowed = ENV['MIN_TRADE_AMT'].to_f
 
       return quantity if quantity >= min_allowed
+
       min_allowed
     end
 
@@ -88,13 +88,14 @@ class Decide
     end
 
     def sell_params(buy_order)
-      buy_price = BigDecimal.new(buy_order['price'])
-      buy_quantity = BigDecimal.new(buy_order['filled_size'])
-      fee = BigDecimal.new(buy_order['fill_fees'])
+      buy_price = BigDecimal(buy_order['price'])
+      buy_quantity = BigDecimal(buy_order['filled_size'])
+      fee = BigDecimal(buy_order['fill_fees'])
 
       Bot.log("Buy fees incurred: #{fee}")
 
       return maker_sell_params(buy_price, buy_quantity) if fee.zero?
+
       taker_sell_params(buy_order, buy_price, buy_quantity, fee)
     end
 
@@ -128,7 +129,7 @@ class Decide
       end
 
       cost_without_fee = @fill.sum do |f|
-        BigDecimal.new(f['price']) * BigDecimal.new(f['size'])
+        BigDecimal(f['price']) * BigDecimal(f['size'])
       end
 
       cost = cost_without_fee + fee
@@ -141,6 +142,7 @@ class Decide
       profit_without_stash = projected_revenue - cost
 
       return breakeven_sell_params(buy_quantity, cost, profit_without_stash) if profit_without_stash.negative?
+
       profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
     end
 
@@ -152,7 +154,7 @@ class Decide
       # positive result for the ones that would otherwise be slightly negative.
 
       ask = qc_tick_rounded(cost / buy_quantity) + ENV['QC_TICK_SIZE'].to_f
-      msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{qc_tick_rounded(profit_without_stash)}. " +
+      msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{qc_tick_rounded(profit_without_stash)}. " \
             "Selling at breakeven: #{ask}."
       Bot.log(msg, nil, :warn)
 
@@ -195,7 +197,10 @@ class Decide
     end
 
     def skip_stashing_params(ask, buy_quantity, profit_without_stash, quantity_less_stash)
-      Bot.log("Sell size after stash would be invalid (#{bc_tick_rounded(quantity_less_stash)}). Skipping stashing.")
+      msg = "Sell size after stash would be invalid (#{bc_tick_rounded(quantity_less_stash)})." \
+      " Skipping stashing."
+
+      Bot.log(msg)
       log_sell_side(ask, profit_without_stash, 0.0)
 
       {
@@ -205,7 +210,7 @@ class Decide
     end
 
     def log_sell_side(ask, quote_profit, base_profit)
-      msg = "Selling at #{qc_tick_rounded(ask)} for an estimated profit of #{qc_tick_rounded(quote_profit)} " +
+      msg = "Selling at #{qc_tick_rounded(ask)} for estimated profit of #{qc_tick_rounded(quote_profit)} " \
             "#{ENV['QUOTE_CURRENCY']} and #{bc_tick_rounded(base_profit)} #{ENV['BASE_CURRENCY']}."
       Bot.log(msg)
     end

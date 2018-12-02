@@ -6,11 +6,11 @@ FactoryBot.define do
   sequence :base_sells_total, rand(40..90) { |n| n }
 
   factory :flipped_trade do
-    base_currency_purchased { BigDecimal.new('3.1123') }
-    buy_price { BigDecimal.new('11.78') }
-    sell_price { BigDecimal.new('11.83') }
-    buy_fee { BigDecimal.new('0.0') }
-    sell_fee { BigDecimal.new('0.0') }
+    base_currency_purchased { BigDecimal('3.1123') }
+    buy_price { BigDecimal('11.78') }
+    sell_price { BigDecimal('11.83') }
+    buy_fee { BigDecimal('0.0') }
+    sell_fee { BigDecimal('0.0') }
     buy_order_id { generate(:exchange_order_id) }
     sell_order_id { generate(:exchange_order_id) }
     sell_pending { true }

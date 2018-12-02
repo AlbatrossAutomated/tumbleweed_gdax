@@ -19,6 +19,7 @@ RSpec.describe UnsellablePartialBuy, type: :model do
     let(:buy_order_id) { tiny_order['id'] }
     let(:buy_fee) { tiny_order['fill_fees'].to_f }
     let(:price) { tiny_order['price'].to_f }
+    let(:trade_pair) { tiny_order['product_id'] }
 
     it 'creates a record with the expected fields' do
       pb = UnsellablePartialBuy.create_from_buy(tiny_order)
@@ -27,7 +28,7 @@ RSpec.describe UnsellablePartialBuy, type: :model do
       expect(pb.buy_price).to eq price
       expect(pb.buy_order_id).to eq buy_order_id
       expect(pb.buy_fee).to eq buy_fee
-      expect(pb.trade_pair).to eq ENV['PRODUCT_ID']
+      expect(pb.trade_pair).to eq trade_pair
     end
   end
 end

@@ -1,1 +1,21 @@
 inherit_from: .rubocop_todo.yml
+
+Style/GuardClause:
+  Exclude:
+    - 'app/models/settings_estimator.rb'
+    - 'app/models/bot.rb'
+    - 'app/models/trader.rb'
+
+Style/ExpandPathArguments:
+  Exclude:
+    - 'bin/*'
+    - 'spec/rails_helper.rb'
+
+Metrics/AbcSize:
+  Exclude:
+    - 'app/models/settings_estimator.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'app/models/settings_estimator.rb'
+    - 'db/migrate/*'

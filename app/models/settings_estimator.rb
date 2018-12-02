@@ -133,6 +133,7 @@ class SettingsEstimator
       revenue - s_fee
     ]
   end
+
   def as_proportion(percent)
     percent / 100.0
   end
