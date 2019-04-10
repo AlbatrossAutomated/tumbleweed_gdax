@@ -4,7 +4,8 @@ class FlippedTrade < ApplicationRecord
   extend Rounding
 
   scope :sold, -> { where(sell_pending: false) }
-  scope :pending_sells, -> { where(sell_pending: true) }
+  # TODO: Add another method for pending_sells w/o regard for trade_pair, i.e., all.
+  scope :pending_sells, -> { where(sell_pending: true, trade_pair: ENV['PRODUCT_ID']) }
 
   def self.quote_currency_profit
     sold.sum(&:quote_currency_profit)
