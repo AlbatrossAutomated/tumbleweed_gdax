@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.5.1'
+ruby '2.6.0'
 
 gem 'pg'
 gem 'rake'
@@ -58,7 +58,7 @@ group :test do
   # IMPORTANT! - Use caution when upgrading webmock
   # Currently any version past 3.1.1 makes live requests to the exchange API on spec runs. Yikes!!
   gem 'webmock', '3.1.1', require: false
-  gem 'shoulda-matchers', require: false
+  gem 'shoulda-matchers'
   gem 'simplecov'
   gem 'fantaskspec'
 end

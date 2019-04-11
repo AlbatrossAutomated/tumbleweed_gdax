@@ -118,7 +118,7 @@ RSpec.describe RequestUsher do
           let(:raised_error) { file_fixture('html_error.html').read }
           let(:err_class) { JSON::ParserError }
           let(:log_msg) do
-            "API ERROR! Msg: 765: unexpected token at '#{raised_error}', Class: #{err_class}. "
+            "API ERROR! Msg: 785: unexpected token at '#{raised_error}', Class: #{err_class}. "
           end
 
           before do
