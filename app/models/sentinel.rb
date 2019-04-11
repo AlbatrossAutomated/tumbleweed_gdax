@@ -16,7 +16,7 @@ class Sentinel
 
     def find_executed_sells(exchange_sell_orders)
       exchange_sell_ids = exchange_sell_orders.map { |ord| ord['id'] }
-      db_sell_ids = FlippedTrade.pending_sells.select {|ft| ft.trade_pair == ENV['PRODUCT_ID']}.map(&:sell_order_id)
+      db_sell_ids = FlippedTrade.pending_sells.select { |ft| ft.trade_pair == ENV['PRODUCT_ID'] }.map(&:sell_order_id)
       possibly_sold_ids = db_sell_ids - exchange_sell_ids
 
       possibly_sold_ids.empty? ? [] : confirmed_sold_ids(possibly_sold_ids)

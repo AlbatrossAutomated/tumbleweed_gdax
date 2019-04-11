@@ -143,12 +143,6 @@ RSpec.describe Decide, type: :model do
       let(:price_log_msg) do
         "BDI: #{buy_down_interval}. Buy Down Bid: #{bid}"
       end
-      let(:covered_to_price) { previous_bid * (1 - BotSettings::COVERAGE) }
-
-      let(:cov_log_msg) do
-        "COVERAGE: #{BotSettings::COVERAGE * 100}%." \
-          " Covered to: $#{qc_tick_rounded(covered_to_price)}."
-      end
 
       subject { Decide.buy_down_params(previous_bid) }
 

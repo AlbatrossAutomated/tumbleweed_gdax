@@ -30,7 +30,7 @@ RSpec.shared_examples_for 'filled sell orders' do
       size = BigDecimal(ord['size'])
       create(:flipped_trade, buy_price: buy_price, base_currency_purchased: size,
                              cost: buy_price * size, sell_price: sell_price,
-                             sell_order_id: ord['id'])
+                             sell_order_id: ord['id'], trade_pair: ord['product_id'])
     end
   end
 end

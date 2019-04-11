@@ -4,7 +4,7 @@ class Bot
   class << self
     def log(phrase, data = nil, log_level = :info)
       # :nocov:
-      unless Rails.env == 'test'
+      unless Rails.env.test?
         Rails.logger.ap phrase, log_level
         Rails.logger.ap data if data
       end
