@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+
 class String
-  def is_json?
+  def valid_json?
     !!JSON.parse(self)
-  rescue
+  rescue JSON::ParserError
     false
   end
 end

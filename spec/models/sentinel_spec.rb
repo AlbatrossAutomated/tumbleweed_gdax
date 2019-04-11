@@ -241,10 +241,7 @@ RSpec.describe Sentinel, type: :model do
         end
 
         context 'a buy fee was incurred' do
-          let(:partial_buy) do
-            ord = JSON.parse(file_fixture('order_5.json').read)
-            ord.merge('fill_fees' => '0.0123')
-          end
+          let(:partial_buy) { JSON.parse(file_fixture('order_5.json').read) }
 
           before do
             allow(Request).to receive(:order) { partial_buy.to_json }

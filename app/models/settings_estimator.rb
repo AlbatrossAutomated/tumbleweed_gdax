@@ -11,7 +11,6 @@ class SettingsEstimator
   attribute :sell_fee, type: BigDecimal
   attribute :base_currency_price, type: BigDecimal
   attribute :min_trade_amount, type: BigDecimal
-  # attribute :buy_down_interval, type: BigDecimal
   attribute :profit_interval, type: BigDecimal
   attribute :base_currency_stash, type: BigDecimal, default: 0.0
 
@@ -27,7 +26,6 @@ class SettingsEstimator
   validates :quote_currency_balance,
             :base_currency_price,
             :buy_quantity,
-            # :buy_down_interval,
             :profit_interval, numericality: { greater_than: 0.0 }
   validates :buy_fee, :sell_fee, numericality: { greater_than_or_equal_to: 0.0 }
   validates :reserve, numericality: { greater_than_or_equal_to: 0.0 }

@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe Decide, type: :model do
   include Rounding
 
-  let(:buy_fee_percent) { ENV['BUY_FEE'].to_f }
+  let(:buy_fee_percent) { ENV['TAKER_FEE'].to_f }
   let(:funds) { JSON.parse(file_fixture('funds.json').read) }
   let(:quote_currency_balance) do
     funds.detect { |f| f['currency'] == ENV['QUOTE_CURRENCY'] }['available'].to_f
@@ -165,7 +165,7 @@ RSpec.describe Decide, type: :model do
     end
 
     describe '.quote_currency_balance' do
-      context 'quote currency is being withheld from risk pool' do
+      context 'some quote currency is held in reserve' do
         it 'returns the quote currency balance less cummulative profit' do
           expect(Decide.quote_currency_balance).to eq available_quote_currency
         end
@@ -181,7 +181,7 @@ RSpec.describe Decide, type: :model do
         end
       end
 
-      context 'quote currency is _not_ being withheld from risk pool' do
+      context 'no quote currency is held in reserve' do
         before { stub_const("BotSettings::HOARD_QC_PROFITS", false) }
 
         it 'returns the quote currency balance' do
@@ -219,12 +219,12 @@ RSpec.describe Decide, type: :model do
     end
   end
 
-  context 'determining ask params' do
-    let(:filled_buy_order) { JSON.parse(file_fixture('order_0.json').read) }
+  context 'determining sell params' do
+    let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
     let(:buy_price) { BigDecimal(buy_order['price']) }
     let(:buy_quantity) { BigDecimal(buy_order['filled_size']) }
     let(:buy_fee) { BigDecimal(buy_order['fill_fees']) }
-    let(:buy_costs) { (buy_price * buy_quantity) + buy_fee }
+    let(:buy_costs) { actual_costs('fill_22.json') }
     let(:sell_quantity) { buy_quantity }
 
     context 'base currency is _not_ being stashed' do
@@ -233,14 +233,29 @@ RSpec.describe Decide, type: :model do
           qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
         end
         let(:projected_revenue) do
-          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL) * sell_quantity
+          expected_ask * sell_quantity * (1 - ENV['MAKER_FEE'].to_f)
         end
         let(:profit) { projected_revenue - buy_costs }
 
         subject { Decide.sell_params(buy_order) }
 
-        context 'no fee incurred on buy' do
-          let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
+        context 'Exchange API lags writing record to fills endpoint' do
+          let(:fill) { file_fixture('fill_22.json').read }
+          let(:buy_order) { filled_buy_order }
+
+          before do
+            allow(Request).to receive(:filled_order).and_return('[]', fill)
+          end
+
+          it 'calls the API until the order is returned from fills endpoint' do
+            expect(Request).to receive(:filled_order).exactly(:twice)
+            subject
+          end
+        end
+
+        context 'a maker fee is incurred on the buy' do
+          let(:fee) { buy_fee }
+          let(:log_msg1) { "Buy fees incurred: #{fee}" }
           let(:log_msg2) do
             "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
               "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
@@ -249,12 +264,10 @@ RSpec.describe Decide, type: :model do
           context 'buy order fully filled' do
             let(:buy_order) { filled_buy_order }
 
-            it 'returns the expected ask' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            it 'returns the expected quantity' do
-              expect(subject[:quantity]).to eq sell_quantity
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
             end
 
             it 'it logs the buy_fee and determined ask_price' do
@@ -266,54 +279,127 @@ RSpec.describe Decide, type: :model do
           end
 
           context 'buy order partially filled' do
-            # sanity check spec; logic should never result in a non-fee buy
-            # selling at anything other than buy_price + PROFIT_INTERVAL,
-            # regardless of quantity
+            let(:buy_order) { JSON.parse(file_fixture('order_5.json').read) }
 
-            let(:quantity) { ENV['MIN_TRADE_AMT'] }
-            let(:buy_order) do
-              filled_buy_order.merge('filled_size' => quantity)
-            end
-
-            it 'returns the expected ask price' do
-              expect(subject[:ask]).to eq expected_ask
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
             end
           end
-        end
 
-        context 'a fee is incurred on the buy' do
           context 'it is still profitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_22.json').read)
-            end
             let(:price) { BigDecimal(filled_buy_order['price']) }
             let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
             let(:buy_order) { filled_buy_order }
 
             before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.05)
-              FlippedTrade.create_from_buy(filled_buy_order)
+              FlippedTrade.create_from_buy(buy_order)
             end
 
-            it 'returns the expected ask price' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            context 'API lags writing to /fills' do
-              let(:fill) { file_fixture('fill_22.json').read }
-
-              before do
-                allow(Request).to receive(:filled_order).and_return('[]', fill)
-              end
-
-              it 'calls the API until the order is written to /fills' do
-                expect(Request).to receive(:filled_order).exactly(:twice)
-                subject
-              end
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
             end
           end
 
-          context 'it is still profitable when filling far below requested bid' do
+          context 'it is still profitable when filling below requested bid' do
+            let(:filled_buy_order) { JSON.parse(file_fixture('order_24.json').read) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:buy_order) { filled_buy_order }
+
+            before do
+              FlippedTrade.create_from_buy(buy_order)
+            end
+
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
+            end
+          end
+
+          context 'it is unprofitable at the set PROFIT_INTERVAL' do
+            let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
+            let(:buy_order) { filled_buy_order }
+            let(:cost) { (price * quantity) + fee }
+            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_TICK_SIZE'].to_f }
+            let(:breakeven_msg) { /Selling at breakeven/ }
+
+            before do
+              stub_const("BotSettings::PROFIT_INTERVAL", 0.03)
+              allow(Bot).to receive(:log)
+              FlippedTrade.create_from_buy(buy_order)
+            end
+
+            it 'logs intent to sell at breakeven' do
+              subject
+              expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
+            end
+
+            it 'returns the expected breakeven ask price' do
+              expect(subject[:ask]).to eq expected_breakeven_ask
+            end
+          end
+        end
+
+        context 'a taker fee is incurred on the buy' do
+          let(:buy_order) { JSON.parse(file_fixture('order_23.json').read) }
+          let(:buy_costs) { actual_costs('fill_23.json') }
+          let(:fee) { buy_fee }
+          let(:log_msg1) { "Buy fees incurred: #{fee}" }
+          let(:log_msg2) do
+            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
+              "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
+          end
+
+          context 'buy order fully filled' do
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
+            end
+
+            it 'it logs the buy_fee and determined ask_price' do
+              allow(Bot).to receive(:log)
+              expect(Bot).to receive(:log).with(log_msg1)
+              expect(Bot).to receive(:log).with(log_msg2)
+              subject
+            end
+          end
+
+          context 'buy order partially filled' do
+            let(:buy_order) { JSON.parse(file_fixture('order_6.json').read) }
+
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
+            end
+          end
+
+          context 'it is still profitable at the set PROFIT_INTERVAL' do
+            let(:price) { BigDecimal(filled_buy_order['price']) }
+            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+            let(:buy_order) { filled_buy_order }
+
+            before do
+              FlippedTrade.create_from_buy(buy_order)
+            end
+
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
+            end
+          end
+
+          context 'it is still profitable when filling below requested bid' do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_24.json').read)
             end
@@ -322,19 +408,18 @@ RSpec.describe Decide, type: :model do
             let(:buy_order) { filled_buy_order }
 
             before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.03)
-              FlippedTrade.create_from_buy(filled_buy_order)
+              FlippedTrade.create_from_buy(buy_order)
             end
 
-            it 'returns the expected ask price' do
-              expect(subject[:ask]).to eq expected_ask
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity
             end
           end
 
           context 'it is unprofitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_22.json').read)
-            end
+            let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
             let(:price) { BigDecimal(filled_buy_order['price']) }
             let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
             let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
@@ -346,7 +431,7 @@ RSpec.describe Decide, type: :model do
             before do
               stub_const("BotSettings::PROFIT_INTERVAL", 0.02)
               allow(Bot).to receive(:log)
-              FlippedTrade.create_from_buy(filled_buy_order)
+              FlippedTrade.create_from_buy(buy_order)
             end
 
             it 'logs intent to sell at breakeven' do
@@ -371,7 +456,7 @@ RSpec.describe Decide, type: :model do
           qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
         end
         let(:projected_revenue) do
-          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL) * sell_quantity
+          expected_ask * sell_quantity * (1 - ENV['MAKER_FEE'].to_f)
         end
         let(:profit_without_stash) { projected_revenue - buy_costs }
         let(:profit_with_stash) { profit_without_stash * (1.0 - stash) }
@@ -381,11 +466,13 @@ RSpec.describe Decide, type: :model do
 
         subject { Decide.sell_params(buy_order) }
 
-        context 'no fee incurred on buy' do
+        context 'a maker fee is incurred on the buy' do
+          ### TRANSFERED
+          let(:fee) { buy_fee }
           let(:base_currency_profit) do
             bc_tick_rounded(sell_quantity - sell_quantity_less_stash)
           end
-          let(:log_msg1) { "Buy fees incurred: #{buy_fee}" }
+          let(:log_msg1) { "Buy fees incurred: #{fee}" }
           let(:log_msg2) do
             "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit_with_stash)} " \
               "#{ENV['QUOTE_CURRENCY']} and #{base_currency_profit} #{ENV['BASE_CURRENCY']}."
@@ -394,15 +481,13 @@ RSpec.describe Decide, type: :model do
           context 'buy order fully filled' do
             let(:buy_order) { filled_buy_order }
 
-            it 'returns the expected ask' do
-              expect(subject[:ask]).to eq expected_ask
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity_less_stash
             end
 
-            it 'returns the expected quantity' do
-              expect(subject[:quantity]).to eq sell_quantity_less_stash
-            end
-
-            it 'it logs the zero buy_fee and determined ask_price' do
+            it 'it logs the buy_fee and determined ask_price' do
               allow(Bot).to receive(:log)
               expect(Bot).to receive(:log).with(log_msg1)
               expect(Bot).to receive(:log).with(log_msg2)
@@ -411,25 +496,20 @@ RSpec.describe Decide, type: :model do
           end
 
           context 'buy order partially filled' do
-            let(:quantity) { "1.00000000" }
-            let(:buy_order) do
-              filled_buy_order.merge('filled_size' => quantity)
-            end
+            let(:buy_order) { JSON.parse(file_fixture('order_5.json').read) }
+            let(:buy_costs) { actual_costs('fill_5.json') }
 
-            it 'returns the expected ask' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            it 'returns the expected quantity' do
-              expect(subject[:quantity]).to eq sell_quantity_less_stash
+            it 'returns the expected sell order params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq sell_quantity_less_stash
             end
           end
 
           context 'sell quantity less stash would not meet the exchange min trade amount' do
-            let(:quantity) { ENV['MIN_TRADE_AMT'] }
-            let(:buy_order) do
-              filled_buy_order.merge('filled_size' => quantity)
-            end
+            let(:filled_buy_order) { JSON.parse(file_fixture('order_25.json').read) }
+            let(:buy_order) { filled_buy_order }
+            let(:buy_costs) { actual_costs('fill_25.json') }
             let(:log_msg) do
               "Sell size after stash would be invalid (#{sell_quantity_less_stash}). " \
                 "Skipping stashing."
@@ -441,17 +521,13 @@ RSpec.describe Decide, type: :model do
               subject
             end
 
-            it 'returns the expected ask' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            it 'returns the buy quantity and skips stashing' do
-              expect(subject[:quantity]).to eq BigDecimal(quantity)
+            it 'returns the expected sell params' do
+              params = subject
+              expect(params[:ask]).to eq expected_ask
+              expect(params[:quantity]).to eq BigDecimal(ENV['MIN_TRADE_AMT'])
             end
           end
-        end
 
-        context 'a fee is incurred on the buy' do
           context 'it is still profitable at the set PROFIT_INTERVAL' do
             let(:filled_buy_order) do
               JSON.parse(file_fixture('order_22.json').read)
@@ -538,6 +614,7 @@ RSpec.describe Decide, type: :model do
 
   def actual_costs(fill_file_name)
     fill = JSON.parse(file_fixture(fill_file_name).read)
+
     without_fee = fill.sum do |f|
       BigDecimal(f['price']) * BigDecimal(f['size'])
     end

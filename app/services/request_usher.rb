@@ -35,7 +35,7 @@ class RequestUsher
     end
 
     def format_error(err_msg)
-      err_msg.is_json? ? JSON.parse(err_msg) : { 'message' => err_msg }
+      err_msg.valid_json? ? JSON.parse(err_msg) : { 'message' => err_msg }
     end
   end
 end

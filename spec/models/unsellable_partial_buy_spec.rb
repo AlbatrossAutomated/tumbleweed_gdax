@@ -8,10 +8,7 @@ RSpec.describe UnsellablePartialBuy, type: :model do
   end
 
   describe '.create_from_buy' do
-    let(:partial_buy) do
-      ord = JSON.parse(file_fixture('order_5.json').read)
-      ord.merge('fill_fees' => '0.0123')
-    end
+    let(:partial_buy) { JSON.parse(file_fixture('order_5.json').read) }
     let(:unsellable) { (ENV['MIN_TRADE_AMT'].to_f - 0.0013).to_s }
     let(:tiny_order) do
       partial_buy.merge('filled_size' => unsellable)

@@ -62,17 +62,17 @@ class Decide
 
     def affordable?(params)
       balance = quote_currency_balance
-      cost = buy_order_cost(params)
+      cost = projected_buy_order_cost(params)
 
-      Bot.log("Usable balance: #{balance}, Cost if fee: #{cost}")
+      Bot.log("Usable balance: #{balance}, projected cost w/fee: #{cost}")
       balance > cost
     end
 
-    def buy_order_cost(params)
+    def projected_buy_order_cost(params)
       # Assume the buy_order will be a 'taker' and incur a fee when determining
       # affordability.
 
-      cost = ((params[:bid] * params[:quantity]) * (1 + ENV['BUY_FEE'].to_f))
+      cost = ((params[:bid] * params[:quantity]) * (1 + ENV['TAKER_FEE'].to_f))
       qc_tick_rounded(cost)
     end
 
@@ -88,28 +88,11 @@ class Decide
     end
 
     def sell_params(buy_order)
-      buy_price = BigDecimal(buy_order['price'])
-      buy_quantity = BigDecimal(buy_order['filled_size'])
-      fee = BigDecimal(buy_order['fill_fees'])
+      # Buy fees and quantity are always accurate from /orders. Price is not
+      # always accurate; it can differ from filled at price. Getting actual
+      # price and thus actual cost requires calling /fills.
 
-      Bot.log("Buy fees incurred: #{fee}")
-
-      return maker_sell_params(buy_price, buy_quantity) if fee.zero?
-
-      taker_sell_params(buy_order, buy_price, buy_quantity, fee)
-    end
-
-    def maker_sell_params(buy_price, buy_quantity)
-      cost = buy_price * buy_quantity
-      calculate_sell_params(buy_price, buy_quantity, cost)
-    end
-
-    def taker_sell_params(buy_order, buy_price, buy_quantity, fee)
-      # Fees and quantity are always accurate from /orders. Price is only
-      # accurate for maker orders. Getting actual price and thus actual cost
-      # for taker orders requires calling a different API endpoint (/fills).
-
-      # buy_price from /orders is passed in here even though it may be
+      # buy_price from /orders is used here even though it may be
       # inaccurate. It will only ever be equal to or lower than requested price.
       # The latter occurs in quick downturns and means the sell price placed at
       # buy_price + PI will generate higher than expected profit, which is good.
@@ -123,6 +106,12 @@ class Decide
       # sell executes. The additional risk taken on when buying a sharp dip is
       # paired with a higher possible reward.
 
+      buy_price = BigDecimal(buy_order['price'])
+      buy_quantity = BigDecimal(buy_order['filled_size'])
+      fee = BigDecimal(buy_order['fill_fees'])
+
+      Bot.log("Buy fees incurred: #{fee}")
+
       loop do
         @fill = RequestUsher.execute('filled_order', buy_order['id'])
         break if @fill.any?
@@ -131,16 +120,17 @@ class Decide
       cost_without_fee = @fill.sum do |f|
         BigDecimal(f['price']) * BigDecimal(f['size'])
       end
-
       cost = cost_without_fee + fee
+
       calculate_sell_params(buy_price, buy_quantity, cost)
     end
 
     def calculate_sell_params(buy_price, buy_quantity, cost)
       sell_price = qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
-      projected_revenue = sell_price * buy_quantity
+      projected_revenue = sell_price * buy_quantity * (1 - ENV['MAKER_FEE'].to_f)
       profit_without_stash = projected_revenue - cost
 
+      # just bail here if profit would already be negative before consideration of BC_STASH
       return breakeven_sell_params(buy_quantity, cost, profit_without_stash) if profit_without_stash.negative?
 
       profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
@@ -150,7 +140,7 @@ class Decide
       # Because rounding has to occur at the decimal places of the exchange tick-size,
       # (rev - cost) can end up being slightly negative at a rounded breakeven price.
       # Some orders' breakeven prices will result in a slightly positive (rev - cost),
-      # so maybe it evens out. Adding a 'QC_TICK_SIZE' is assurance for a slightly
+      # so maybe it evens out. Adding a 'QC_TICK_SIZE' is further assurance for a slightly
       # positive result for the ones that would otherwise be slightly negative.
 
       ask = qc_tick_rounded(cost / buy_quantity) + ENV['QC_TICK_SIZE'].to_f
@@ -158,10 +148,7 @@ class Decide
             "Selling at breakeven: #{ask}."
       Bot.log(msg, nil, :warn)
 
-      {
-        ask: ask,
-        quantity: buy_quantity
-      }
+      sell_params_hash(ask, buy_quantity)
     end
 
     def profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
@@ -170,10 +157,7 @@ class Decide
       if BotSettings::BC_STASH.zero?
         log_sell_side(ask, profit_without_stash, 0.0)
 
-        {
-          ask: qc_tick_rounded(ask),
-          quantity: buy_quantity
-        }
+        sell_params_hash(qc_tick_rounded(ask), buy_quantity)
       else
         stash_sell_params(ask, buy_quantity, cost, profit_without_stash)
       end
@@ -189,10 +173,7 @@ class Decide
         stash = buy_quantity - quantity_less_stash
         log_sell_side(ask, profit_after_stash, stash)
 
-        {
-          ask: qc_tick_rounded(ask),
-          quantity: bc_tick_rounded(quantity_less_stash)
-        }
+        sell_params_hash(qc_tick_rounded(ask), bc_tick_rounded(quantity_less_stash))
       end
     end
 
@@ -203,9 +184,13 @@ class Decide
       Bot.log(msg)
       log_sell_side(ask, profit_without_stash, 0.0)
 
+      sell_params_hash(qc_tick_rounded(ask), buy_quantity)
+    end
+
+    def sell_params_hash(ask, quantity)
       {
-        ask: qc_tick_rounded(ask),
-        quantity: buy_quantity
+        ask: ask,
+        quantity: quantity
       }
     end
 
