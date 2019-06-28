@@ -549,7 +549,7 @@ orders all the way to current market price as if it never stopped trading. One
 possible advantage of this is described [here](../../wiki/Hidden-Gains).
 
 #### Other Settings  
-**`RESERVE`**  
+**`QC_RESERVE`**  
 Float (default is 0.0): The amount of fiat in your GDAX account to exclude Tumbleweed
 from trading. Handy if you have funds in your account that you want to use for other
 exchange activity, or if you just want to test drive or develop out Tumbleweed.

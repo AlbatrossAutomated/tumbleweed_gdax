@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
+# See README for full explanation of these settings
+
 class BotSettings
-  QUANTITY = 0.1 # per buy order quantity
+  QUANTITY = 0.1 # per buy order
   BUY_DOWN_INTERVAL = 0.20 # nominal
   PROFIT_INTERVAL = 0.20 # nominal
-  PRINT_MANTRA = true
-  HOARD_QC_PROFITS = true # set aside quote currency profits from sell orders; keep them separate from available funds to trade with 
-  BC_STASH = 0.0 # percent as decimal (15% -> 0.15) - amount of profit to realize in base currency
-  ORDER_BACKFILLING = false # DANGER!! If true, this will backfill orders when trader resumes at a lower price than when it was stopped
+  PRINT_MANTRA = true # do or do not show mantra in logs (appears at beginning of trading cycles)
+  HOARD_QC_PROFITS = true # set aside quote currency profits; keep them out of available funds to trade with
+  BC_STASH = 0.0 # percent as decimal (15% -> 0.15), the portion of profits to realize in base currency
+  ORDER_BACKFILLING = false # DANGER!! If true, this will backfill orders if/when trader resumes at a lower price than when it was stopped
   CANCEL_RETRIES = 10 # nominal
-  RESERVE = 0.0 # nominal amount of funds in your exchange account to isolate from Tumbleweed trading
-  CHILL_PARAMS = { consecutive_buys: 4, wait_time: 30 }.freeze # wait_time in minutes
+  QC_RESERVE = 0.0 # nominal amount of quote currency funds in your exchange account to exclude from trading activity
+  CHILL_PARAMS = { consecutive_buys: 2, wait_time: 30 }.freeze # wait_time in minutes
 end
