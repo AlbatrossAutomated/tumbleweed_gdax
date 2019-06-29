@@ -25,7 +25,6 @@ class SettingsEstimatorController < Rails::ApplicationController
       buy_quantity
       buy_down_interval
       profit_interval
-      base_currency_stash
       reserve
     ]
 

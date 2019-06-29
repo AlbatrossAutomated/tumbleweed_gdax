@@ -188,34 +188,6 @@ trader to leverage, or some combination of the two.
 Setting this to `false` means that profits from flipped trades are instantly included
 in the available funds for the trader.
 
-**_base currency stashing_**  
-A configurable setting, this could also be called 'Exchange Mining'. All or a
-portion of the profits from each sell can be realized in the base currency, which
-is to say some amount of the buy order quantity is not included in the sell order
-quantity. It is stashed instead. This in effect is mining coins from the exchange,
-or at least, high frequency dollar cost averaging.
-
-An interesting scenario here is that if all profits are realized in the base currency
-then USD costs will equal revenues. This means no tax liability for those trades.
-The transactions will still need to be reported when filing but there won't be
-USD gains associated with those transactions.
-
-If I'm seeing this right there are some advantages here over mining in terms
-of tax liability, as traditionally mined coins are immediately recognized as taxable
-income at FMV (in addition to being taxed on gains when those mined coins are sold).
-So depending on market activity, there are timeframes over which crypto can be
-accumulated for net zero and therefor no tax liability.
-
-Even without the income tax component there will still be a tax liability on stashed
-coins upon exit. And it could end up that the price isn't ideal when an exit needs to
-happen, but maybe a stable coin hedges this risk somehow? I also wonder what the
-tax accounting would be if the 'exchange mined' coins are donated instead of sold.
-Would the operator get a deduction on coins mined for net zero?
-
-Intelligent automation that determines when to sell from the stash could also improve
-Tumbleweed's numbers on the bigger upswings beyond the price where it started trading.
-In my view this is where it currently underperforms.
-
 **_profit taking_**  
 Selling off of all pending orders when acceptable earnings/gains can be realized.
 Described [here](../../wiki/Portfolio-Value-Matters), this process is not currently
@@ -328,7 +300,6 @@ subsequent checks won't be run.
 
 ## GTK's Before Developing/Running Tumbleweed
 #### Recently Added (not 'Battle Tested') Features
-* Base Currency Stashing
 * Order Backfilling default to `false`
 * Reserve
 * Settings Estimator
@@ -521,14 +492,6 @@ changed.
 * If set to `true` and coverage proves inadequate to the point where all tradable funds
 end up in pending sell orders, the option to give the hoarded gains to Tumbleweed
 for leveraging would be on the table.
-
-**`BC_STASH`**  
-Float (default is 0.0): A percent of per sell profit as decimal, 0.0 to 1.0.
-
-* For example, if this was set at 20% and quote profit (USD) was $0.05, then $0.01
-worth of the base currency will not be included in the sell order quantity, and
-quote profit would be $0.04. If 100% of profit is realized in the base currency
-then costs of the buys should equal revenue of the sells.
 
 **`ORDER_BACKFILLING`**  
 Boolean (default is `false`): If the trader is stopped or crashed, and the price has

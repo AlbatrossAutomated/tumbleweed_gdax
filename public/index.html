@@ -106,17 +106,6 @@
             </div>
             <input type="text" name="settings_estimator[buy_quantity]" id="settings_estimator_buy_quantity" required/>
           </div>
-          <!-- <div class="three columns">
-            <label class="required" for="settings_estimator_buy_down_interval">Buy down interval</label>
-            <div class="tooltip">?
-              <span class="tooltiptext">
-                The difference in price between subsequent buys. For example, if a buy
-                executes at $185/LTC, and the BDI is $0.20, the next buy order will
-                be placed at $184.80.
-              </span>
-            </div>
-            <input type="text" name="settings_estimator[buy_down_interval]" id="settings_estimator_buy_down_interval" required/>
-          </div> -->
           <div class="three columns">
             <label class="required" for="settings_estimator_profit_interval">Profit interval</label>
             <div class="tooltip">?
@@ -127,18 +116,6 @@
               </span>
             </div>
             <input type="text" name="settings_estimator[profit_interval]" id="settings_estimator_profit_interval" required/>
-          </div>
-          <div class="three columns">
-            <label class="required" for="settings_estimator_base_currency_stash">Base currency stash (%)</label>
-            <div class="tooltip">?
-              <span class="tooltiptext">
-                0-100, the percent of per sell profit to realize in the base currency. For
-                example, if this was set at 20% and quote profit was $0.05, then
-                $0.01 worth of the base currency will not be included in the sell
-                order quantity, and quote profit would be $0.04.
-              </span>
-            </div>
-            <input type="text" name="settings_estimator[base_currency_stash]" id="settings_estimator_base_currency_stash" value="0" required/>
           </div>
           <div class="three columns">
             <label class="required" for="settings_estimator_reserve">Reserve</label>
@@ -169,7 +146,6 @@
               <th>Quantity<sub>Buy</sub></th>
               <th>Quantity<sub>Sell</sub></th>
               <th>Profit<sub>Quote</sub></th>
-              <th>Profit<sub>Base</sub></th>
             </tr>
           </thead>
           <tbody>
@@ -177,7 +153,6 @@
               <td id="quantity-buy"></td>
               <td id="quantity-sell"></td>
               <td id="quote-profit-per-sell"></td>
-              <td id="base-profit-per-sell"></td>
             </tr>
           </tbody>
         </table>
@@ -197,10 +172,9 @@
                   <th>Sell<sub>Fee</sub></th>
                   <th>Revenue</th>
                   <th>Profit<sub>Quote</sub></th>
-                  <th>Profit<sub>Base</sub></th>
                 </tr>
               </thead>
-              <tbody  id="trade-detailed">
+              <tbody id="trade-detailed">
               </tbody>
             </table>
           </div>

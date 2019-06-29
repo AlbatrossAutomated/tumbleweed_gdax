@@ -44,29 +44,14 @@ class FlippedTrade < ApplicationRecord
 
     Trader.consecutive_buys = 0
     Bot.log("Consecutive buy count set to #{Trader.consecutive_buys}")
-
     self.sell_fee = BigDecimal(sold_order['fill_fees'])
-
-    reconcile_buy_side if buy_fee > 0.0
-
-    if sell_fee > 0.0
-      reconcile_sell_side
-    else
-      self.revenue = sell_price * base_currency_sold
-    end
-
+    reconcile_buy_side
+    reconcile_sell_side
     self.quote_currency_profit = revenue - cost
     finalize_trade
   end
 
-  def base_currency_sold
-    base_currency_purchased - base_currency_profit
-  end
-
   def reconcile_buy_side
-    # Not sure why the loop is needed, as /fills should be reliable after
-    # /order/:id response indicates full order exeution.
-
     loop do
       @fill = RequestUsher.execute('filled_order', buy_order_id)
       break if @fill.any?
@@ -75,15 +60,14 @@ class FlippedTrade < ApplicationRecord
     cost = @fill.sum do |f|
       BigDecimal(f['price']) * BigDecimal(f['size'])
     end
-
     self.buy_price = cost / base_currency_purchased # average price
+
     self.cost = cost + buy_fee
+    # ^ first set in .create_from_buy with /order data; overwrite here with actuals from
+    # /fills, as order settlment may have involved multiple sub-fills w/different prices
   end
 
   def reconcile_sell_side
-    # Not sure why the loop is needed, as /fills should be reliable after
-    # /order/:id response indicates full order exeution.
-
     loop do
       @fill = RequestUsher.execute('filled_order', sell_order_id)
       break if @fill.any?
@@ -93,7 +77,7 @@ class FlippedTrade < ApplicationRecord
       BigDecimal(f['price']) * BigDecimal(f['size'])
     end
 
-    self.sell_price = revenue / base_currency_sold # average price
+    self.sell_price = revenue / base_currency_purchased # average price
     self.revenue = revenue
     self.cost = cost + sell_fee
   end
@@ -102,8 +86,7 @@ class FlippedTrade < ApplicationRecord
     self.sell_pending = false
 
     qc_profit_msg = FlippedTrade.qc_tick_rounded(quote_currency_profit)
-    msg = "Id: #{id}, Quote Currency Profit: #{qc_profit_msg}, " \
-          "Base Currency Stashed: #{base_currency_profit}, Fee: #{sell_fee}."
+    msg = "Id: #{id}, Quote Currency Profit: #{qc_profit_msg}, Fee: #{sell_fee}."
     Bot.log(msg)
 
     save

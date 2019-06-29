@@ -8,7 +8,6 @@ class BotSettings
   PROFIT_INTERVAL = 0.20 # nominal
   PRINT_MANTRA = true # do or do not show mantra in logs (appears at beginning of trading cycles)
   HOARD_QC_PROFITS = true # set aside quote currency profits; keep them out of available funds to trade with
-  BC_STASH = 0.0 # percent as decimal (15% -> 0.15), the portion of profits to realize in base currency
   ORDER_BACKFILLING = false # DANGER!! If true, this will backfill orders if/when trader resumes at a lower price than when it was stopped
   CANCEL_RETRIES = 10 # nominal
   QC_RESERVE = 0.0 # nominal amount of quote currency funds in your exchange account to exclude from trading activity

@@ -12,17 +12,13 @@ class SettingsEstimator
   attribute :base_currency_price, type: BigDecimal
   attribute :min_trade_amount, type: BigDecimal
   attribute :profit_interval, type: BigDecimal
-  attribute :base_currency_stash, type: BigDecimal, default: 0.0
 
   # results
   attribute :trade_detailed
   attribute :sell_quantity, type: BigDecimal
   attribute :quote_profit_per_sell, type: BigDecimal
-  attribute :base_profit_per_sell, type: BigDecimal
   attribute :results_errors, default: []
 
-  validates :base_currency_stash, numericality: true
-  validates :base_currency_stash, inclusion: { in: 0..100, message: "must be between 0 and 100" }
   validates :quote_currency_balance,
             :base_currency_price,
             :buy_quantity,
@@ -34,33 +30,15 @@ class SettingsEstimator
 
   def results
     self.quote_currency_balance = quote_currency_balance - reserve
-    self.sell_quantity = calculate_sell_quantity(base_currency_price)
+    self.sell_quantity = buy_quantity
     self.quote_profit_per_sell = calculate_quote_profit_per_sell(base_currency_price, sell_quantity)
-    self.base_profit_per_sell = calculate_base_profit_per_sell(sell_quantity)
     self.trade_detailed = calculate_trade_detailed
     add_results_errors
     self
   end
 
-  def calculate_sell_quantity(buy_price)
-    if base_currency_stash.zero?
-      buy_quantity
-    else
-      quote_profit_proportion = 1.0 - as_proportion(base_currency_stash)
-      revenue_without_stash = revenue(buy_price, buy_quantity)
-      profit_without_stash = revenue_without_stash - costs(buy_price)
-      profit_with_stash = profit_without_stash * quote_profit_proportion
-
-      ((profit_with_stash + costs(buy_price)) / ask(buy_price)).round(8)
-    end
-  end
-
   def calculate_quote_profit_per_sell(buy_price, sell_quantity)
     (revenue(buy_price, sell_quantity) - costs(buy_price)).round(8)
-  end
-
-  def calculate_base_profit_per_sell(sell_quantity)
-    buy_quantity - sell_quantity
   end
 
   def revenue(buy_price, sell_quantity)
@@ -89,7 +67,7 @@ class SettingsEstimator
     sell_price = base_currency_price + profit_interval
 
     cost, b_fee, total_cost = buy_side_trade(buy_price)
-    sell_quantity, revenue, s_fee, total_revenue = sell_side_trade(buy_price, sell_price)
+    sell_quantity, revenue, s_fee, total_revenue = sell_side_trade(sell_price)
 
     {
       balance: balance.round(2),
@@ -103,8 +81,7 @@ class SettingsEstimator
       revenue: revenue.round(8),
       sell_fee: s_fee.round(8),
       total_revenue: total_revenue.round(8),
-      quote_profit: (total_revenue - total_cost).round(8),
-      base_profit: (buy_quantity - sell_quantity).round(8)
+      quote_profit: (total_revenue - total_cost).round(8)
     }
   end
 
@@ -119,8 +96,8 @@ class SettingsEstimator
     ]
   end
 
-  def sell_side_trade(buy_price, sell_price)
-    sell_quantity = calculate_sell_quantity(buy_price)
+  def sell_side_trade(sell_price)
+    sell_quantity = buy_quantity
     revenue = sell_price * sell_quantity
     s_fee = sell_fee_proportion * revenue
 

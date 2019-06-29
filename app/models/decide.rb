@@ -128,15 +128,14 @@ class Decide
     def calculate_sell_params(buy_price, buy_quantity, cost)
       sell_price = qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
       projected_revenue = sell_price * buy_quantity * (1 - ENV['MAKER_FEE'].to_f)
-      profit_without_stash = projected_revenue - cost
+      projected_profit = projected_revenue - cost
 
-      # just bail here if profit would already be negative before consideration of BC_STASH
-      return breakeven_sell_params(buy_quantity, cost, profit_without_stash) if profit_without_stash.negative?
+      return breakeven_sell_params(buy_quantity, cost, projected_profit) if projected_profit.negative?
 
-      profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
+      profitable_sell_params(buy_price, buy_quantity, projected_profit)
     end
 
-    def breakeven_sell_params(buy_quantity, cost, profit_without_stash)
+    def breakeven_sell_params(buy_quantity, cost, projected_profit)
       # Because rounding has to occur at the decimal places of the exchange tick-size,
       # (rev - cost) can end up being slightly negative at a rounded breakeven price.
       # Some orders' breakeven prices will result in a slightly positive (rev - cost),
@@ -144,46 +143,16 @@ class Decide
       # non-negative profit.
 
       ask = qc_tick_rounded(cost / buy_quantity) + ENV['QC_INCREMENT'].to_f
-      msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{qc_tick_rounded(profit_without_stash)}. " \
+      msg = "#{ENV['QUOTE_CURRENCY']} profit would be #{qc_tick_rounded(projected_profit)}. " \
             "Selling at breakeven: #{ask}."
       Bot.log(msg, nil, :warn)
 
       sell_params_hash(ask, buy_quantity)
     end
 
-    def profitable_sell_params(buy_price, buy_quantity, cost, profit_without_stash)
+    def profitable_sell_params(buy_price, buy_quantity, projected_profit)
       ask = buy_price + BotSettings::PROFIT_INTERVAL
-
-      if BotSettings::BC_STASH.zero?
-        log_sell_side(ask, profit_without_stash, 0.0)
-
-        sell_params_hash(qc_tick_rounded(ask), buy_quantity)
-      else
-        stash_sell_params(ask, buy_quantity, cost, profit_without_stash)
-      end
-    end
-
-    def stash_sell_params(ask, buy_quantity, cost, profit_without_stash)
-      profit_after_stash = profit_without_stash * (1.0 - BotSettings::BC_STASH)
-      quantity_less_stash = (profit_after_stash + cost) / ask
-
-      if quantity_less_stash <= ENV['MIN_TRADE_AMT'].to_f
-        skip_stashing_params(ask, buy_quantity, profit_without_stash, quantity_less_stash)
-      else
-        stash = buy_quantity - quantity_less_stash
-        log_sell_side(ask, profit_after_stash, stash)
-
-        sell_params_hash(qc_tick_rounded(ask), bc_tick_rounded(quantity_less_stash))
-      end
-    end
-
-    def skip_stashing_params(ask, buy_quantity, profit_without_stash, quantity_less_stash)
-      msg = "Sell size after stash would be invalid (#{bc_tick_rounded(quantity_less_stash)})." \
-      " Skipping stashing."
-
-      Bot.log(msg)
-      log_sell_side(ask, profit_without_stash, 0.0)
-
+      log_sell_side(ask, projected_profit)
       sell_params_hash(qc_tick_rounded(ask), buy_quantity)
     end
 
@@ -194,9 +163,9 @@ class Decide
       }
     end
 
-    def log_sell_side(ask, quote_profit, base_profit)
+    def log_sell_side(ask, quote_profit)
       msg = "Selling at #{qc_tick_rounded(ask)} for estimated profit of #{qc_tick_rounded(quote_profit)} " \
-            "#{ENV['QUOTE_CURRENCY']} and #{bc_tick_rounded(base_profit)} #{ENV['BASE_CURRENCY']}."
+            "#{ENV['QUOTE_CURRENCY']}."
       Bot.log(msg)
     end
   end

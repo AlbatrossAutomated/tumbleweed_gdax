@@ -49,7 +49,6 @@ function addKeyEstimates(resp) {
   $('#quantity-buy').html(resp.buy_quantity);
   $('#quantity-sell').html(resp.sell_quantity);
   $('#quote-profit-per-sell').html(resp.quote_profit_per_sell);
-  $('#base-profit-per-sell').html(resp.base_profit_per_sell);
 }
 
 function addTradeDetailed(trade) {
@@ -62,8 +61,7 @@ function addTradeDetailed(trade) {
                 '<td>' + trade.sell_quantity + '</td>' +
                 '<td>' + trade.sell_fee + '</td>' +
                 '<td>' + trade.total_revenue + '</td>' +
-                '<td>' + trade.quote_profit + '</td>' +
-                '<td>' + trade.base_profit + '</td>'
+                '<td>' + trade.quote_profit + '</td>'
 
   $('#trade-detailed').append('<tr>' + rowData + '</tr>');
 }

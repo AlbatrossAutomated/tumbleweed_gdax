@@ -9,7 +9,7 @@ class PerformanceMetric < ApplicationRecord
     # :quote_currency_balance -> funds in quote currency account
     # :base_currency_balance -> unsellable_partial_buy amounts
     # :quote_currency_profit -> see QuoteCurrencyProfit#current_trade_cycle
-    # :base_currency_profit -> the total base currency stashed
+    # [DEPRECATED] :base_currency_profit -> the total base currency stashed
     # :quote_value_of_base -> (base_currency_balance + base_currency_for_sale) * best_bid
     # :portfolio_quote_currency_value -> quote_currency_balance + quote_value_of_base
 

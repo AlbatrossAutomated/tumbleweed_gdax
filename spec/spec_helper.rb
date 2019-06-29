@@ -54,7 +54,6 @@ RSpec.configure do |config|
     # currently should not be changed
     stub_const('BotSettings::CHILL_PARAMS', consecutive_buys: 3, wait_time: 1)
     stub_const('BotSettings::QC_RESERVE', 0.0)
-    stub_const('BotSettings::BC_STASH', 0.0)
     stub_const('BotSettings::HOARD_QC_PROFITS', true)
   end
 

@@ -3,9 +3,9 @@
 RSpec.shared_examples_for 'a flipped trade reconciler' do
   let(:maker_buy_order) { JSON.parse(file_fixture('order_20.json').read) }
   let(:maker_sell_order) { JSON.parse(file_fixture('order_21.json').read) }
-  let(:taker_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
+  let(:taker_buy_order) { JSON.parse(file_fixture('order_24.json').read) }
   let(:taker_sell_order) { JSON.parse(file_fixture('order_23.json').read) }
-  let(:taker_buy_fill) { JSON.parse(file_fixture('fill_22.json').read) }
+  let(:taker_buy_fill) { JSON.parse(file_fixture('fill_24.json').read) }
   let(:taker_sell_fill) { JSON.parse(file_fixture('fill_23.json').read) }
   let(:consecutive_buys) { Trader.consecutive_buys }
 
@@ -36,8 +36,8 @@ RSpec.shared_examples_for 'a flipped trade reconciler' do
 
   it 'logs the actual profit' do
     subject
-    msg = "Id: #{ft.id}, Quote Currency Profit: #{qc_tick_rounded(ft.quote_currency_profit)}, " \
-          "Base Currency Stashed: #{ft.base_currency_profit}, Fee: #{ft.sell_fee}."
+    msg = "Id: #{ft.id}, Quote Currency Profit: #{qc_tick_rounded(ft.quote_currency_profit)}" \
+          ", Fee: #{ft.sell_fee}."
 
     expect(Bot).to have_received(:log).with(msg)
   end

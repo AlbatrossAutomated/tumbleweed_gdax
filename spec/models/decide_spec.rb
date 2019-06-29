@@ -227,384 +227,219 @@ RSpec.describe Decide, type: :model do
     let(:buy_costs) { actual_costs('fill_22.json') }
     let(:sell_quantity) { buy_quantity }
 
-    context 'base currency is _not_ being stashed' do
-      describe '.sell_params' do
-        let(:expected_ask) do
-          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
-        end
-        let(:projected_revenue) do
-          expected_ask * sell_quantity * (1 - ENV['MAKER_FEE'].to_f)
-        end
-        let(:profit) { projected_revenue - buy_costs }
+    describe '.sell_params' do
+      let(:expected_ask) do
+        qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
+      end
+      let(:projected_revenue) do
+        expected_ask * sell_quantity * (1 - ENV['MAKER_FEE'].to_f)
+      end
+      let(:profit) { projected_revenue - buy_costs }
 
-        subject { Decide.sell_params(buy_order) }
+      subject { Decide.sell_params(buy_order) }
 
-        context 'Exchange API lags writing record to fills endpoint' do
-          let(:fill) { file_fixture('fill_22.json').read }
+      context 'Exchange API lags writing record to fills endpoint' do
+        let(:fill) { file_fixture('fill_22.json').read }
+        let(:buy_order) { filled_buy_order }
+
+        before do
+          allow(Request).to receive(:filled_order).and_return('[]', fill)
+        end
+
+        it 'calls the API until the order is returned from fills endpoint' do
+          expect(Request).to receive(:filled_order).exactly(:twice)
+          subject
+        end
+      end
+
+      context 'a maker fee is incurred on the buy' do
+        let(:fee) { buy_fee }
+        let(:log_msg1) { "Buy fees incurred: #{fee}" }
+        let(:log_msg2) do
+          "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
+            "#{ENV['QUOTE_CURRENCY']}."
+        end
+
+        context 'buy order fully filled' do
           let(:buy_order) { filled_buy_order }
 
-          before do
-            allow(Request).to receive(:filled_order).and_return('[]', fill)
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
           end
 
-          it 'calls the API until the order is returned from fills endpoint' do
-            expect(Request).to receive(:filled_order).exactly(:twice)
+          it 'it logs the buy_fee and determined ask_price' do
+            allow(Bot).to receive(:log)
+            expect(Bot).to receive(:log).with(log_msg1)
+            expect(Bot).to receive(:log).with(log_msg2)
             subject
           end
         end
 
-        context 'a maker fee is incurred on the buy' do
-          let(:fee) { buy_fee }
-          let(:log_msg1) { "Buy fees incurred: #{fee}" }
-          let(:log_msg2) do
-            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
-              "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
-          end
+        context 'buy order partially filled' do
+          let(:buy_order) { JSON.parse(file_fixture('order_5.json').read) }
 
-          context 'buy order fully filled' do
-            let(:buy_order) { filled_buy_order }
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
-
-            it 'it logs the buy_fee and determined ask_price' do
-              allow(Bot).to receive(:log)
-              expect(Bot).to receive(:log).with(log_msg1)
-              expect(Bot).to receive(:log).with(log_msg2)
-              subject
-            end
-          end
-
-          context 'buy order partially filled' do
-            let(:buy_order) { JSON.parse(file_fixture('order_5.json').read) }
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
-          end
-
-          context 'it is still profitable at the set PROFIT_INTERVAL' do
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
-          end
-
-          context 'it is still profitable when filling below requested bid' do
-            let(:filled_buy_order) { JSON.parse(file_fixture('order_24.json').read) }
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
-          end
-
-          context 'it is unprofitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
-            let(:buy_order) { filled_buy_order }
-            let(:cost) { (price * quantity) + fee }
-            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_INCREMENT'].to_f }
-            let(:breakeven_msg) { /Selling at breakeven/ }
-
-            before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.03)
-              allow(Bot).to receive(:log)
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'logs intent to sell at breakeven' do
-              subject
-              expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
-            end
-
-            it 'returns the expected breakeven ask price' do
-              expect(subject[:ask]).to eq expected_breakeven_ask
-            end
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
           end
         end
 
-        context 'a taker fee is incurred on the buy' do
-          let(:buy_order) { JSON.parse(file_fixture('order_23.json').read) }
-          let(:buy_costs) { actual_costs('fill_23.json') }
-          let(:fee) { buy_fee }
-          let(:log_msg1) { "Buy fees incurred: #{fee}" }
-          let(:log_msg2) do
-            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
-              "#{ENV['QUOTE_CURRENCY']} and 0.0 #{ENV['BASE_CURRENCY']}."
+        context 'it is still profitable at the set PROFIT_INTERVAL' do
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:buy_order) { filled_buy_order }
+
+          before do
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'buy order fully filled' do
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
+          end
+        end
 
-            it 'it logs the buy_fee and determined ask_price' do
-              allow(Bot).to receive(:log)
-              expect(Bot).to receive(:log).with(log_msg1)
-              expect(Bot).to receive(:log).with(log_msg2)
-              subject
-            end
+        context 'it is still profitable when filling below requested bid' do
+          let(:filled_buy_order) { JSON.parse(file_fixture('order_24.json').read) }
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:buy_order) { filled_buy_order }
+
+          before do
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'buy order partially filled' do
-            let(:buy_order) { JSON.parse(file_fixture('order_6.json').read) }
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
+          end
+        end
 
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
+        context 'it is unprofitable at the set PROFIT_INTERVAL' do
+          let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
+          let(:buy_order) { filled_buy_order }
+          let(:cost) { (price * quantity) + fee }
+          let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_INCREMENT'].to_f }
+          let(:breakeven_msg) { /Selling at breakeven/ }
+
+          before do
+            stub_const("BotSettings::PROFIT_INTERVAL", 0.03)
+            allow(Bot).to receive(:log)
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'it is still profitable at the set PROFIT_INTERVAL' do
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
+          it 'logs intent to sell at breakeven' do
+            subject
+            expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
           end
 
-          context 'it is still profitable when filling below requested bid' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_24.json').read)
-            end
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity
-            end
-          end
-
-          context 'it is unprofitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) { JSON.parse(file_fixture('order_22.json').read) }
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
-            let(:buy_order) { filled_buy_order }
-            let(:cost) { (price * quantity) + fee }
-            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_INCREMENT'].to_f }
-            let(:breakeven_msg) { /Selling at breakeven/ }
-
-            before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.02)
-              allow(Bot).to receive(:log)
-              FlippedTrade.create_from_buy(buy_order)
-            end
-
-            it 'logs intent to sell at breakeven' do
-              subject
-              expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
-            end
-
-            it 'returns the expected breakeven ask price' do
-              expect(subject[:ask]).to eq expected_breakeven_ask
-            end
+          it 'returns the expected breakeven ask price' do
+            expect(subject[:ask]).to eq expected_breakeven_ask
           end
         end
       end
-    end
 
-    context 'base currency _is_ being stashed' do
-      before { stub_const("BotSettings::BC_STASH", 0.1) }
-
-      describe '.sell_params' do
-        let(:stash) { BotSettings::BC_STASH }
-        let(:expected_ask) do
-          qc_tick_rounded(buy_price + BotSettings::PROFIT_INTERVAL)
-        end
-        let(:projected_revenue) do
-          expected_ask * sell_quantity * (1 - ENV['MAKER_FEE'].to_f)
-        end
-        let(:profit_without_stash) { projected_revenue - buy_costs }
-        let(:profit_with_stash) { profit_without_stash * (1.0 - stash) }
-        let(:sell_quantity_less_stash) do
-          bc_tick_rounded((profit_with_stash + buy_costs) / expected_ask)
+      context 'a taker fee is incurred on the buy' do
+        let(:buy_order) { JSON.parse(file_fixture('order_26.json').read) }
+        let(:buy_costs) { actual_costs('fill_26.json') }
+        let(:fee) { buy_fee }
+        let(:log_msg1) { "Buy fees incurred: #{fee}" }
+        let(:log_msg2) do
+          "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit)} " \
+            "#{ENV['QUOTE_CURRENCY']}."
         end
 
-        subject { Decide.sell_params(buy_order) }
-
-        context 'a maker fee is incurred on the buy' do
-          let(:fee) { buy_fee }
-          let(:base_currency_profit) do
-            bc_tick_rounded(sell_quantity - sell_quantity_less_stash)
-          end
-          let(:log_msg1) { "Buy fees incurred: #{fee}" }
-          let(:log_msg2) do
-            "Selling at #{expected_ask} for estimated profit of #{qc_tick_rounded(profit_with_stash)} " \
-              "#{ENV['QUOTE_CURRENCY']} and #{base_currency_profit} #{ENV['BASE_CURRENCY']}."
+        context 'buy order fully filled' do
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
           end
 
-          context 'buy order fully filled' do
-            let(:buy_order) { filled_buy_order }
+          it 'it logs the buy_fee and determined ask_price' do
+            allow(Bot).to receive(:log)
+            expect(Bot).to receive(:log).with(log_msg1)
+            expect(Bot).to receive(:log).with(log_msg2)
+            subject
+          end
+        end
 
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity_less_stash
-            end
+        context 'buy order partially filled' do
+          let(:buy_order) { JSON.parse(file_fixture('order_6.json').read) }
 
-            it 'it logs the buy_fee and determined ask_price' do
-              allow(Bot).to receive(:log)
-              expect(Bot).to receive(:log).with(log_msg1)
-              expect(Bot).to receive(:log).with(log_msg2)
-              subject
-            end
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
+          end
+        end
+
+        context 'it is still profitable at the set PROFIT_INTERVAL' do
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:buy_order) { filled_buy_order }
+
+          before do
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'buy order partially filled' do
-            let(:buy_order) { JSON.parse(file_fixture('order_5.json').read) }
-            let(:buy_costs) { actual_costs('fill_5.json') }
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
+          end
+        end
 
-            it 'returns the expected sell order params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq sell_quantity_less_stash
-            end
+        context 'it is still profitable when filling below requested bid' do
+          let(:filled_buy_order) do
+            JSON.parse(file_fixture('order_24.json').read)
+          end
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:buy_order) { filled_buy_order }
+
+          before do
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'sell quantity less stash would not meet the exchange min trade amount' do
-            let(:filled_buy_order) { JSON.parse(file_fixture('order_25.json').read) }
-            let(:buy_order) { filled_buy_order }
-            let(:buy_costs) { actual_costs('fill_25.json') }
-            let(:log_msg) do
-              "Sell size after stash would be invalid (#{sell_quantity_less_stash}). " \
-                "Skipping stashing."
-            end
+          it 'returns the expected sell order params' do
+            params = subject
+            expect(params[:ask]).to eq expected_ask
+            expect(params[:quantity]).to eq sell_quantity
+          end
+        end
 
-            it 'logs it is skipping stashing' do
-              allow(Bot).to receive(:log)
-              expect(Bot).to receive(:log).with(log_msg)
-              subject
-            end
+        context 'it is unprofitable at the set PROFIT_INTERVAL' do
+          let(:filled_buy_order) { JSON.parse(file_fixture('order_24.json').read) }
+          let(:price) { BigDecimal(filled_buy_order['price']) }
+          let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
+          let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
+          let(:buy_order) { filled_buy_order }
+          let(:cost) { (price * quantity) + fee }
+          let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_INCREMENT'].to_f }
+          let(:breakeven_msg) { /Selling at breakeven/ }
 
-            it 'returns the expected sell params' do
-              params = subject
-              expect(params[:ask]).to eq expected_ask
-              expect(params[:quantity]).to eq BigDecimal(ENV['MIN_TRADE_AMT'])
-            end
+          before do
+            stub_const("BotSettings::PROFIT_INTERVAL", 0.02)
+            allow(Bot).to receive(:log)
+            FlippedTrade.create_from_buy(buy_order)
           end
 
-          context 'it is still profitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_22.json').read)
-            end
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
-            let(:buy_costs) { actual_costs('fill_22.json') }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.05)
-              FlippedTrade.create_from_buy(filled_buy_order)
-            end
-
-            it 'returns the expected ask' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            it 'returns the expected quantity' do
-              expect(subject[:quantity]).to eq sell_quantity_less_stash
-            end
+          it 'logs intent to sell at breakeven' do
+            subject
+            expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
           end
 
-          context 'it is still profitable when filling far below requested bid' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_24.json').read)
-            end
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
-            let(:buy_costs) { actual_costs('fill_24.json') }
-            let(:buy_order) { filled_buy_order }
-
-            before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.03)
-              FlippedTrade.create_from_buy(filled_buy_order)
-            end
-
-            it 'returns the expected ask price' do
-              expect(subject[:ask]).to eq expected_ask
-            end
-
-            it 'returns the expected quantity' do
-              expect(subject[:quantity]).to eq sell_quantity_less_stash
-            end
-          end
-
-          context 'it is unprofitable at the set PROFIT_INTERVAL' do
-            let(:filled_buy_order) do
-              JSON.parse(file_fixture('order_22.json').read)
-            end
-            let(:price) { BigDecimal(filled_buy_order['price']) }
-            let(:quantity) { BigDecimal(filled_buy_order['filled_size']) }
-            let(:fee) { BigDecimal(filled_buy_order['fill_fees']) }
-            let(:buy_order) { filled_buy_order }
-            let(:cost) { (price * quantity) + fee }
-            let(:expected_breakeven_ask) { qc_tick_rounded(cost / quantity) + ENV['QC_INCREMENT'].to_f }
-            let(:breakeven_msg) { /Selling at breakeven/ }
-
-            before do
-              stub_const("BotSettings::PROFIT_INTERVAL", 0.02)
-              allow(Bot).to receive(:log)
-              FlippedTrade.create_from_buy(filled_buy_order)
-            end
-
-            it 'logs intent to sell at breakeven' do
-              subject
-              expect(Bot).to have_received(:log).with(breakeven_msg, nil, :warn)
-            end
-
-            it 'returns the expected breakeven ask price' do
-              expect(subject[:ask]).to eq expected_breakeven_ask
-            end
-
-            it 'it does not stash' do
-              expect(subject[:quantity]).to eq sell_quantity
-            end
+          it 'returns the expected breakeven ask price' do
+            expect(subject[:ask]).to eq expected_breakeven_ask
           end
         end
       end

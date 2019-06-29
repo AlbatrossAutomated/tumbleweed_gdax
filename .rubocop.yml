@@ -19,3 +19,7 @@ Metrics/MethodLength:
   Exclude:
     - 'app/models/settings_estimator.rb'
     - 'db/migrate/*'
+
+Metrics/LineLength:
+  Exclude:
+    - config/initializers/bot_settings.rb

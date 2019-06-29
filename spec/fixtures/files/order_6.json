@@ -1,5 +1,5 @@
 {
-  "_comment_notFromApi": "this is a maker buy order that was partially-filled",
+  "_comment_notFromApi": "this is a taker buy order that was partially-filled",
   "id": "6",
   "price": "11.26000000",
   "size": "2.00000000",
