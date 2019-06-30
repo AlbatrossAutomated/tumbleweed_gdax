@@ -126,21 +126,15 @@ label {
   display: none;
 }
 
-#key-results th,
-#key-results td {
-  text-align: center;
-}
-
-#key-results > tbody > tr {
+#quote-profit-per-sell {
   background-color: #2CAFAF;
   opacity: 0.7;
-}
-
-#key-results > tbody > tr > td {
   color: white;
   font-weight: bold;
   font-style: italic;
   letter-spacing: 2px;
+  padding: 10px 20px;
+  margin-top: 1.3rem;
 }
 
 #first-trade {
@@ -239,63 +233,4 @@ label {
   opacity: 1;
   padding: 8px;
   margin-bottom: 3px;
-}
-
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {display:none;}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: darkgray;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #2CAFAF;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2CAFAF;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
- border-radius: 34px;
-}
-
-.slider.round:before {
- border-radius: 50%;
 }

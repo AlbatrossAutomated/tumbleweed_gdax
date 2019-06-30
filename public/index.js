@@ -14,7 +14,7 @@ $(document).ready(function() {
         showInputErrors(resp.input_errors);
       } else {
         showResultsErrors(resp.results_errors);
-        addKeyEstimates(resp);
+        $('#quote-profit-per-sell').html(resp.quote_profit_per_sell);
         addTradeDetailed(resp.trade_detailed)
         displayResults();
       };
@@ -43,12 +43,6 @@ function showErrors(errors, category) {
   });
 
   $('.' + category + '-errors').show();
-}
-
-function addKeyEstimates(resp) {
-  $('#quantity-buy').html(resp.buy_quantity);
-  $('#quantity-sell').html(resp.sell_quantity);
-  $('#quote-profit-per-sell').html(resp.quote_profit_per_sell);
 }
 
 function addTradeDetailed(trade) {

@@ -42,25 +42,23 @@
             <label class="required" for="settings_estimator_buy_fee">Buy fee (%)</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                Most trades should be maker trades where the fee is 0.0 on GDAX.
-                Taker fees vary per crypto and by user volume.
-                If you'd like to simulate taker trades, check GDAX docs for the
-                crypto you intend to trade, e.g, LTC taker fee is 0.3%.
+                Most trades will incur a maker fee where the first tier is 0.15%,
+                though fees vary depending on a user's trailing 30 day volume.
+                The fee for taker trades starts at 0.25%.
               </span>
             </div>
-            <input type="text" name="settings_estimator[buy_fee]" id="settings_estimator_buy_fee" value="0.0" required/>
+            <input type="text" name="settings_estimator[buy_fee]" id="settings_estimator_buy_fee" value="0.15" required/>
           </div>
           <div class="three columns">
             <label class="required" for="settings_estimator_sell_fee">Sell fee (%)</label>
             <div class="tooltip">?
               <span class="tooltiptext">
-                Most trades should be maker trades where the fee is 0.0 on GDAX.
-                Taker fees vary per crypto and by user volume.
-                If you'd like to simulate taker trades, check GDAX docs for the
-                crypto you intend to trade, e.g, LTC taker fee is 0.3%.
+                Most trades will incur a maker fee where the first tier is 0.15%,
+                though fees vary depending on a user's trailing 30 day volume.
+                The fee for taker trades starts at 0.25%.
               </span>
             </div>
-            <input type="text" name="settings_estimator[sell_fee]" id="settings_estimator_sell_fee" value="0.0" required/>
+            <input type="text" name="settings_estimator[sell_fee]" id="settings_estimator_sell_fee" value="0.15" required/>
           </div>
           <div class="three columns">
             <label class="required" for="settings_estimator_balance">Quote currency balance</label>
@@ -135,27 +133,12 @@
       </form>
 
       <div class="row" id="results-summary">
-        <h5 class="brand-secondary"><em>Key Estimates</em></h5>
+        <h5 class="brand-secondary"><em>Estimated Profit per Sell</em></h5>
         <div class="results-errors">
           <span class="close">&times;</span>
           <ul class="results-errors-list"></ul>
         </div>
-        <table class="u-full-width" id="key-results">
-          <thead>
-            <tr>
-              <th>Quantity<sub>Buy</sub></th>
-              <th>Quantity<sub>Sell</sub></th>
-              <th>Profit<sub>Quote</sub></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td id="quantity-buy"></td>
-              <td id="quantity-sell"></td>
-              <td id="quote-profit-per-sell"></td>
-            </tr>
-          </tbody>
-        </table>
+        <span class="u-cf" id="quote-profit-per-sell"></span>
         <div class="row">
           <h5 id="first-trade" class="brand-secondary"><em>Detailed</em></h5>
           <div class="scrollable-tbody">
@@ -171,7 +154,7 @@
                   <th>Sell<sub>Q</sub></th>
                   <th>Sell<sub>Fee</sub></th>
                   <th>Revenue</th>
-                  <th>Profit<sub>Quote</sub></th>
+                  <th>Profit</th>
                 </tr>
               </thead>
               <tbody id="trade-detailed">
