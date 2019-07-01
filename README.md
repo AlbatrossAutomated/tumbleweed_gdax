@@ -1,3 +1,13 @@
+***
+The GDAX exchange name was changed to Coinbase Pro. This trader runs against the Coinbase Pro exchange API.
+
+### UPDATE 7/1/2019
+The recent change in Coinbase Pro's fee structure, plus the varying tick sizes
+(e.g. only whole units of XLM can be traded), broke 'Base Currency Stashing'.
+Thus the feature has been removed. It's too bad, but I'll be thinking on it to
+see if there's another way to go about it given the exchange rules.
+***
+
 This project is for developers who are also traders. If you haven't already developed
 against an exchange API where funds have been at risk, attempting to operate this
 trader will likely be an unpleasant experience. Depending on your goals and
