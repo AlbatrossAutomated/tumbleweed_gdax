@@ -8,10 +8,10 @@ RSpec.describe FlippedTrade, type: :model do
   describe 'class methods' do
     let(:profit) { 0.05 }
     let(:flipped_trades) do
-      create_list(:flipped_trade, 3, :sell_executed, quote_currency_profit: profit)
+      create_list(:flipped_trade, 3, :sell_executed, quote_currency_profit: profit, trade_pair: ENV['PRODUCT_ID'])
     end
-    let(:pending_sells) { create_list(:flipped_trade, 3) }
-    let(:completed) { FlippedTrade.where(sell_pending: true) }
+    let(:pending_sells) { create_list(:flipped_trade, 3, trade_pair: ENV['PRODUCT_ID']) }
+    let(:completed) { FlippedTrade.where(sell_pending: false) }
     let(:completed_count) { completed.count }
 
     before do

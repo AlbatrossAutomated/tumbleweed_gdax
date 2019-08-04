@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe QuoteCurrencyProfit, category: :model do
-  let(:trades) { create_list(:flipped_trade, 5, :sell_executed) }
+  let(:trades) { create_list(:flipped_trade, 5, :sell_executed, trade_pair: ENV['PRODUCT_ID']) }
   let(:trade_profit) { trades.sum(&:quote_currency_profit) }
   let(:entry_amt) { trade_profit * 0.20 }
 
