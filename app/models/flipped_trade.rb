@@ -8,7 +8,7 @@ class FlippedTrade < ApplicationRecord
   scope :pending_sells, -> { where(sell_pending: true, trade_pair: ENV['PRODUCT_ID']) }
 
   def self.quote_currency_profit
-    sold.sum(&:quote_currency_profit)
+    sold.where(trade_pair: ENV['PRODUCT_ID']).sum(&:quote_currency_profit)
   end
 
   def self.base_currency_profit
