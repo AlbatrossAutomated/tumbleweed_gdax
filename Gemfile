@@ -35,7 +35,6 @@ gem 'rubocop', require: false
 # gem 'rack-cors'
 
 gem 'bootsnap', require: false
-gem "nokogiri", ">= 1.10.4"
 
 group :development, :test do
   gem 'rspec-rails'

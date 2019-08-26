@@ -304,7 +304,6 @@ DEPENDENCIES
   fantaskspec
   json_spec
   listen
-  nokogiri (>= 1.10.4)
   pg
   puma (~> 3.0)
   rails (= 5.2.3)
