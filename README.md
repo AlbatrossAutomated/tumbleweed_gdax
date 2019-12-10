@@ -1,6 +1,9 @@
 ***
 The GDAX exchange name was changed to Coinbase Pro. This trader runs against the Coinbase Pro exchange API.
 
+### UPDATE 12/10/2019
+There's been another change to Coinbase Pro's fee structure which **renders this trader inoperable**. Now that there is always a fee - regardless of maker or taker orders - the `PROFIT_INTERVAL` logic **no longer works**. The fix would involve reverting to part of this trader's original approach of setting a fixed nominal profit-per-trade, however I'm not sure when I will have time to do that.
+
 ### UPDATE 7/1/2019
 The recent change in Coinbase Pro's fee structure, plus the varying tick sizes
 (e.g. only whole units of XLM can be traded), broke 'Base Currency Stashing'.

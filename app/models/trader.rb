@@ -253,19 +253,21 @@ class Trader
       tries = BotSettings::CANCEL_RETRIES
 
       begin
+        # cancel response might be the ID now
         resp = RequestUsher.execute('cancel_order', order_id)
         Bot.log("Cancel resp: ", resp)
         @resp = resp.is_a?(Hash) ? resp['message'] : resp
+
         raise OrderNotFoundError if @resp == 'NotFound'
       rescue OrderNotFoundError
-        Bot.log("'NotFound' on cancel. Retries left: ", tries, :warn)
+        Bot.log("Order NOT canceled! Retries left: ", tries, :warn)
         retry unless (tries -= 1).zero?
       end
       cancel_result(order_id)
     end
 
     def cancel_result(order_id)
-      return cancel_success(order_id) if @resp.include?(order_id)
+      return cancel_success(order_id) if @resp == order_id
 
       filled_before_cancel(order_id) if @resp == 'Order already done'
     end
