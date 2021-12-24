@@ -1,6 +1,14 @@
 ***
 The GDAX exchange name was changed to Coinbase Pro. This trader runs against the Coinbase Pro exchange API.
 
+## Donations
+**BTC**: 17yTLEEgs4yMiFCcboYKsXT9wsQ9XVpvAC  
+**ETH**: 0x6C40eA9fD6d00539f22B0Cf5Db2C54152326288c  
+**LTC**: LU6LRhAXLWGWB3BzPsyGygK6JyqVEBbayg
+
+### UPDATE 12/23/2021
+I still have not gotten around to updating the trader so that it runs at a profit given the Coinbase fee structure that was introduced. Nonetheless, I see people are still finding this repo and I hope they find it useful.
+
 ### UPDATE 12/10/2019
 There's been another change to Coinbase Pro's fee structure which **renders this trader inoperable**. Now that there is always a fee - regardless of maker or taker orders - the `PROFIT_INTERVAL` logic **no longer works**. The fix would involve reverting to part of this trader's original approach of setting a fixed nominal profit-per-trade, however I'm not sure when I will have time to do that.
 
